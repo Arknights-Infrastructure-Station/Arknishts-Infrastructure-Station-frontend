@@ -1,0 +1,25 @@
+.el-dropdown:deep(.el-tooltip__trigger:focus-visible) { /*全局注册不起作用*/
+    outline: unset; /* 消除光标移动到下拉菜单上出现的黑色边框 */
+}
+
+/*el-image图片加载失败时，失败标识的样式*/
+.image-slot {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    height: 100%;
+    background: var(--el-fill-color-light);
+    color: var(--el-text-color-secondary);
+    font-size: 30px;
+}
+
+/*简单搜索筛选栏样式*/
+.simple-search-bar{
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-content: center;
+    gap: 20px;
+    margin: 10px;
+}

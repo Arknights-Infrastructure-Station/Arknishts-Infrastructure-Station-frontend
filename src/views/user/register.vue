@@ -55,7 +55,7 @@
 import {ElMessage} from "element-plus";
 import {buttonLabel, initSendTimes, updateCooldown} from "@/utils/sendCodeCooldown.js";
 import axios from "@/utils/axios.js"
-import {tipMessage, tipRegisterMessage} from "@/utils/messageHanding.js";
+import {tipMessage, tipMessageFromSingleResult, tipRegisterMessage} from "@/utils/messageHanding.js";
 import {tryToSendCode} from "@/utils/sendCode.js";
 import {useRouter} from "vue-router";
 
@@ -113,7 +113,7 @@ async function submitForm() {
       verificationCode: registerData.verificationCode
     });
 
-    if (tipRegisterMessage(response)) //如果注册成功，2秒后跳转到登录页面
+    if (tipMessageFromSingleResult(response)) //如果注册成功，2秒后跳转到登录页面
       setTimeout(() => {
         router.push({name: 'login'})
       }, 2000)

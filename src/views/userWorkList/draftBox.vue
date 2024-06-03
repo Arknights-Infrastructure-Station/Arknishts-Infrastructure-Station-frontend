@@ -116,13 +116,11 @@ onMounted(async () => {
       v-model="openDeleteConfirmDialog"
       draggable
       title="删除暂存作业"
-      width="400"
   >
-    <div class="workFile-title">
-      您确定要删除 {{ deleteGoal.name }}
+    <div class="dialog-content">
+      您确定要删除 <b>{{ deleteGoal.name }}</b> 吗？
       <!--作业类型标签-->
       <TypeAndLayoutTags :layout="deleteGoal.layout" :type="deleteGoal.type"/>
-      吗？
     </div>
     <template #footer>
       <div class="dialog-footer">

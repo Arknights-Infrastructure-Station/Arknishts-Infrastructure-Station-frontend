@@ -8,6 +8,7 @@ import "@/assets/css/sprite/sprite_avatar.css";
 import "@/assets/css/sprite/sprite_rank.css";
 
 import '@/assets/global.css'
+import '@/assets/css/userWorkFileList/user_work_file_list.css'
 
 import "./../node_modules/vditor/dist/index.css";
 

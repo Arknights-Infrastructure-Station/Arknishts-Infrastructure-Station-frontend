@@ -17,6 +17,20 @@ function tipMessage(response) {
     }
 }
 
+function tipRegisterMessage(response) {
+    let code = response.data.operateCode
+    if (code === 200) {
+        ElMessage.success(response.data.message)
+        return true
+    } else if (code > 200 && code < 300) {
+        ElMessage.info(response.data.message)
+        return true
+    } else {
+        ElMessage.error(response.data.message)
+        return false
+    }
+}
+
 /**
  * 仅提示失败消息，适用于默认调用接口的地方
  */
@@ -42,4 +56,4 @@ function tipMessageFromSingleResult(response) {
     }
 }
 
-export {tipMessage, tipMessageFromSingleResult,tipErrorMessage}
+export {tipMessage, tipMessageFromSingleResult,tipErrorMessage,tipRegisterMessage}

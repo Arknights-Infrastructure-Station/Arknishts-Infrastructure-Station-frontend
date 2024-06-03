@@ -1,3 +1,3 @@
 # arknights-infrastructure-station
 
-访问地址：[明日方舟基建作业站](arknightsinfrastructurestation.cn)
+访问地址：[arknightsinfrastructurestation.cn](https://arknightsinfrastructurestation.cn)

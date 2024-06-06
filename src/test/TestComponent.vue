@@ -1,17 +1,15 @@
 <script setup>
 
-import MarkdownEditor from "@/components/markdown/MarkdownEditor.vue";
-import MarkdownPreview from "@/components/markdown/MarkdownPreview.vue";
+import RateGroup from "@/custom/MiniParts/RateGroup.vue";
 
-const text = ref('123')
-watch(() => text.value, () => {
-  console.log(text.value)
+const state=ref(0)
+watch(state,()=>{
+  console.log('state=',state.value)
 })
 </script>
 
 <template>
-  <markdown-editor v-model="text"/>
-  <markdown-preview description="321"/>
+  <rate-group v-model="state"/>
 </template>
 
 <style scoped lang="less">

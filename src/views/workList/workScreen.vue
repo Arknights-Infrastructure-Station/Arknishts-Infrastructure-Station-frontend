@@ -4,12 +4,16 @@ import {screenWorkFileList} from "@/api/callEndpoint.js";
 import {useWorkFileScreenData} from "@/store/globalWorkFileScreenData.js";
 import {cloneDeep} from "lodash";
 import {ElMessage} from "element-plus";
+import {useRefreshFlag} from "@/store/globalRefreshFlag.js";
 
 const data = useData()
 const workFileScreenData = useWorkFileScreenData()
+const refreshFlag = useRefreshFlag()
 
 const types = ['全部', 'MAA', 'Mower'];
 const layouts = ['全部', '243', '153', '333', '252', '342', '其它'];
+const sortType = ['发布时间', '评分']; //排序依据
+const orderType = ['降序', '升序']; //排序方式
 
 const dateShortcuts = [
   {
@@ -159,6 +163,7 @@ const updateFilterData = async () => {
     layout: workFileScreenData.layout,
     dateRange: workFileScreenData.getFormattedDateRange(),
     workQuery: workFileScreenData.workQuery,
+    sortOrder: workFileScreenData.convertToSortOrder(),
     currentPage: workFileScreenData.currentPage,
     pageSize: workFileScreenData.pageSize
   }
@@ -173,6 +178,14 @@ watch(
     },
     {deep: true}
 );
+
+//监听刷新标记，时刻准备为其它组件刷新数据
+watchEffect(() => {
+  if (refreshFlag.workFileListRefreshFlag) {
+    updateFilterData()
+    refreshFlag.workFileListRefreshFlag = false;
+  }
+})
 
 // 在组件挂载时调用后端接口获取作业文件列表
 onMounted(async () => {
@@ -197,6 +210,18 @@ onMounted(async () => {
         </div>
 
         <!-- 第三个筛选项 -->
+        <div class="filter-item item1">
+          <div class="filter-label"><b>排序依据</b></div>
+          <el-segmented v-model="workFileScreenData.sortType" :options="sortType" size="default"/>
+        </div>
+
+        <!-- 第四个筛选项 -->
+        <div class="filter-item item2">
+          <div class="filter-label"><b>排序方式</b></div>
+          <el-segmented v-model="workFileScreenData.orderType" :options="orderType" size="default"/>
+        </div>
+
+        <!-- 第五个筛选项 -->
         <div class="filter-item item3">
           <div class="filter-label"><b>是否启用自定义适配</b></div>
           <el-switch v-model="workFileScreenData.isEnableAdapter"></el-switch>
@@ -210,7 +235,7 @@ onMounted(async () => {
           </el-tooltip>
         </div>
 
-        <!-- 第四个筛选项 -->
+        <!-- 第六个筛选项 -->
         <div class="filter-item item4">
           <div class="filter-label"><b>发布日期</b></div>
           <el-date-picker
@@ -222,7 +247,7 @@ onMounted(async () => {
           />
         </div>
 
-        <!-- 第五个筛选项 -->
+        <!-- 第七个筛选项 -->
         <div class="filter-item item5">
           <div class="filter-label"><b>作业查询</b></div>
           <el-input

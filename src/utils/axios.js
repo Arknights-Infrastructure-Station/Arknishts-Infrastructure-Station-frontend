@@ -24,6 +24,7 @@ axiosInstance.interceptors.request.use(config => {
 // 以下字段和后端返回Record对应
 const fieldsToSave = [
     'userInfo',
+    'userRates',
     'starList',
     'staredWorkFileList',
     'staredWorkFileListCount',

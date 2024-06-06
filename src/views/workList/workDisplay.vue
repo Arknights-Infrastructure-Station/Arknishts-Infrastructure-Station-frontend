@@ -5,13 +5,24 @@ import {cloneDeep} from "lodash";
 import TypeAndLayoutTags from "@/custom/MiniParts/TypeAndLayoutTags.vue";
 import PureInfrastructureTable from "@/custom/setInfrastructure/PureInfrastructureTable.vue";
 import {useData} from "@/store/globalData.js";
-import {downloadWorkFile, getPngByKey, getStarListForUser, starWorkFile, unstarWorkFile} from "@/api/callEndpoint.js";
+import {
+  downloadWorkFile,
+  getPngByKey,
+  getRateRecordsForUser,
+  getStarListForUser,
+  rate,
+  starWorkFile,
+  unstarWorkFile
+} from "@/api/callEndpoint.js";
 import {formatJSON} from "@/utils/commonMethods.js";
 import MarkdownPreview from "@/components/markdown/MarkdownPreview.vue";
 import {useWorkFileScreenData} from "@/store/globalWorkFileScreenData.js";
+import RateGroup from "@/custom/MiniParts/RateGroup.vue";
+import {useRefreshFlag} from "@/store/globalRefreshFlag.js";
 
 const data = useData()
 const workFileScreenData = useWorkFileScreenData()
+const refreshFlag = useRefreshFlag()
 
 // 查看作业细节
 const workFileDetailVisible = ref(false);
@@ -19,6 +30,7 @@ const showFileContent = ref(false)
 const workFileDetail = reactive({})
 
 let originStarState = false //作业收藏状态备份，只有在收藏状态与备份状态不同时（用户做了修改），才调用收藏/取消收藏接口
+let originScore = -1
 const seeDetail = (row) => {
   Object.assign(workFileDetail, row)
   workFileDetailVisible.value = true
@@ -27,6 +39,14 @@ const seeDetail = (row) => {
   hasStar.value = data.starList.some(starRecord => starRecord.wid === workFileDetail.id)
   //备份该作业的收藏状态
   originStarState = hasStar.value
+
+  //加载该作业的赞/踩状态，提示组件更新
+  helpfulState.score = data.userRates.find(userRate => userRate.wid === workFileDetail.id)
+      ? data.userRates.find(userRate => userRate.wid === workFileDetail.id).score : -1
+  helpfulState.updated = false
+
+  //备份该作业的赞/踩状态
+  originScore = helpfulState.score
 };
 const codeBox = ref()
 const drawerOpened = async () => {
@@ -40,6 +60,12 @@ const drawerOpened = async () => {
     workFileDetail.fileContent = await getPngByKey(workFileDetail.fileContent)
   }
 }
+
+//作业点赞/点踩
+const helpfulState = reactive({
+  score: -1, //作业赞踩分数
+  updated: true //评分更新状态
+})
 
 //作业收藏
 const isLogin = ref(false)
@@ -70,14 +96,25 @@ const starClick = () => {
   }
 }
 
-//抽屉关闭时，检测用户操作记录并尝试改变作业收藏状态
-const changeStarState = async () => {
+//抽屉关闭时的回调函数
+const drawerClose = async () => {
+  //检测用户操作记录并尝试改变作业收藏状态
   if (originStarState !== hasStar.value) {
     if (hasStar.value) {
       await starWorkFile(workFileDetail.id)
     } else {
       await unstarWorkFile(workFileDetail.id)
     }
+  }
+
+  //如果赞踩状态不一样，调用评分接口
+  if (helpfulState.score !== originScore) {
+    const useRate = {
+      wid: workFileDetail.id,
+      score: helpfulState.score
+    }
+    await rate(useRate)
+    refreshFlag.workFileListRefreshFlag = true //修改刷新标记，通知筛选组件刷新作业列表
   }
 }
 
@@ -94,6 +131,8 @@ onMounted(async () => {
 
   //获取该用户的作业收藏列表
   await getStarListForUser(false)
+  //获取该用户的赞踩记录
+  await getRateRecordsForUser()
 })
 </script>
 
@@ -111,6 +150,14 @@ onMounted(async () => {
       <el-table-column label="采用的基建布局" prop="layout"/>
       <el-table-column label="发布者" prop="author"/>
       <el-table-column label="发布日期" prop="releaseDate" sortable/>
+      <el-table-column label="评分" prop="score" sortable>
+        <template #default="scope">
+          <div style="display: flex; align-items: center">
+            <span v-if="scope.row.score===-1">暂无评分</span>
+            <span v-else>{{ scope.row.score }}</span>
+          </div>
+        </template>
+      </el-table-column>
       <el-table-column label="下载数" prop="downloadNumber" sortable/>
       <el-table-column label="收藏数" prop="starNumber" sortable/>
     </el-table>
@@ -129,7 +176,7 @@ onMounted(async () => {
       :with-header="false"
       direction="rtl"
       size="50%"
-      @close="changeStarState"
+      @close="drawerClose"
       @opened="drawerOpened"
   >
     <div>
@@ -169,6 +216,17 @@ onMounted(async () => {
         <Star/>
       </el-icon>
       {{ workFileDetail.starNumber }}</span>
+      <span v-if="workFileDetail.score!==-1">
+        <el-rate
+            v-model="workFileDetail.score"
+            disabled
+            show-score
+            style="margin-right: 10px;"
+            text-color="#ff9900"
+        />
+      </span>
+      <span v-else class="drawer-mark-text">暂无评分</span>
+      <rate-group :helpfulState="helpfulState"/>
     </div>
     <markdown-preview
         v-if="workFileDetail.description !== ''"
@@ -199,7 +257,7 @@ onMounted(async () => {
       />
     </div>
     <pre v-if="workFileDetail.storageType==='text'">
-      <code ref="codeBox" class="language-json" style="margin-top: -25px;margin-bottom: -25px">
+      <code ref="codeBox" class="language-json" style="margin-top: -18px;margin-bottom: -25px">
          {{ formatJSON(workFileDetail.fileContent) }}
       </code>
     </pre>
@@ -235,7 +293,8 @@ onMounted(async () => {
 
 //标注文本容器
 .drawer-mark-text-container {
-  display: flex;
+  display: inline-flex;
+  align-items: center;
   gap: 10px;
   flex-wrap: wrap;
   margin-top: 10px;

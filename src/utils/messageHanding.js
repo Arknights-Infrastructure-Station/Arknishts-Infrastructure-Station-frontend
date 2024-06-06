@@ -28,6 +28,20 @@ function tipErrorMessage(response) {
     }
 }
 
+/**
+ * 提示简单响应类型的错误消息
+ */
+function tipErrorMessageFromSingleResult(response) {
+    let code = response.data.operateCode
+    if (code >= 400 && code < 600) {
+        ElMessage.error(response.data.operateResult?.message)
+        return false
+    }
+}
+
+/**
+ * 提示简单响应类型的消息
+ */
 function tipMessageFromSingleResult(response) {
     let code = response.data.operateCode
     if (code === 200) {
@@ -42,4 +56,4 @@ function tipMessageFromSingleResult(response) {
     }
 }
 
-export {tipMessage, tipMessageFromSingleResult,tipErrorMessage}
+export {tipMessage, tipMessageFromSingleResult, tipErrorMessage, tipErrorMessageFromSingleResult}

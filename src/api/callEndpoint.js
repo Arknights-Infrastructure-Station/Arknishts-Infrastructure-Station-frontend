@@ -1,5 +1,5 @@
 import axios from "@/utils/axios.js";
-import {tipErrorMessage, tipMessage} from "@/utils/messageHanding.js";
+import {tipErrorMessage, tipErrorMessageFromSingleResult, tipMessage} from "@/utils/messageHanding.js";
 import {ElMessage} from "element-plus";
 import {adaptMower} from "@/utils/adapter.js";
 
@@ -129,6 +129,36 @@ export async function getPngByKey(key) {
 export async function screenWorkFileList(workFileScreen) {
     try {
         const response = await axios.post(`/workFile/screenWorkFileList`, workFileScreen);
+        tipErrorMessage(response)
+    } catch (error) {
+        ElMessage.error(`筛选作业失败: ${error.response?.data?.operateResult?.message || error.message}`);
+    }
+}
+
+/**
+ * 根据用户设置的筛选参数调用后端作业筛选接口
+ *
+ * @param workFileScreen
+ * @returns {Promise<string>} 根据用户设置的筛选参数筛选后的作业列表
+ */
+export async function rate(userRate) {
+    try {
+        const response = await axios.post(`/score/rate`, userRate);
+        tipMessage(response)
+    } catch (error) {
+        ElMessage.error(`作业评分失败: ${error.response?.data?.operateResult?.message || error.message}`);
+    }
+}
+
+/**
+ * 根据用户设置的筛选参数调用后端作业筛选接口
+ *
+ * @param workFileScreen
+ * @returns {Promise<string>} 根据用户设置的筛选参数筛选后的作业列表
+ */
+export async function getRateRecordsForUser() {
+    try {
+        const response = await axios.get(`/score/getRateRecordsForUser`);
         tipErrorMessage(response)
     } catch (error) {
         ElMessage.error(`筛选作业失败: ${error.response?.data?.operateResult?.message || error.message}`);

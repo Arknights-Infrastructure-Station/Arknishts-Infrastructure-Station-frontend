@@ -7,6 +7,7 @@ export const useData = defineStore('globalData', {
             operators: [],
             infrastructure: []
         }, // 用户信息
+        userRates:[], //用户评分信息
         starList: [], // 收藏列表
         staredWorkFileList: [], // 收藏作业列表
         staredWorkFileListCount: 0, // 收藏作业列表总数量

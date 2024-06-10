@@ -98,7 +98,7 @@ const initVditor = () => {
 
 function updateDescriptionData() {
   vditorData.value = vditor.getValue()
-  console.log('vditorData:' + vditorData.value)
+  // console.log('vditorData:' + vditorData.value)
 }
 
 onMounted(() => {

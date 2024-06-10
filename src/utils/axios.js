@@ -39,18 +39,33 @@ const fieldsToSave = [
 ];
 export {fieldsToSave}
 
+const fieldsNeedConvert = [
+    'staredWorkFileList',
+    'workFileList',
+    'postedWorkFileList',
+    'stagingWorkFileList',
+    'recyclingWorkFileList',
+];
+
 // 响应拦截器，将token发往后端的时候，后端会负责去掉Bearer，前端直接发送就行
 axiosInstance.interceptors.response.use(response => {
     const globalData = useData();
-    let token = response.headers['Authorization'] || response.headers['authorization'];
+    let token = response.headers['Authorization'];
     if (token) {
         localStorage.setItem('ais_token', token);
     }
 
     // 拦截存储
     const handleResponseData = (key) => {
-        if (response.data[key]) {
-            saveToLocalStorage(key, response.data[key]);
+        const fileList = response.data[key];
+        if (fileList) {
+            if (fieldsNeedConvert.includes(fileList)) {
+                fileList.forEach(workFile => {
+                    //将JSON格式的，作业描述图片数组字符串转换为实际数组
+                    workFile.descriptionPictures = JSON.parse(workFile.descriptionPictures)
+                })
+            }
+            saveToLocalStorage(key, fileList);
             globalData[key] = getFromLocalStorage(key);
         }
     };

@@ -13,7 +13,7 @@ import {ElMessage} from "element-plus";
 import {editState} from "@/static/state/editState.js";
 import MarkdownPreview from "@/components/markdown/MarkdownPreview.vue";
 import {usePostedWorkFileSimpleSearch} from "@/store/simpleSearch/globalPostedWorkFileSimpleSearch.js";
-import {getPngByKey, screenPostedWorkFileList} from "@/api/callEndpoint.js";
+import {getWebPByKey, screenPostedWorkFileList} from "@/api/callEndpoint.js";
 
 const data = useData()
 const createOrEditWorkFileData = useCreateOrEditWorkFileData();
@@ -51,20 +51,28 @@ watch(() => postedWorkFileSimpleSearch, () => {
 //定位当前活动栏，以便实现图片懒加载
 const activityBar = ref('')
 
-function changeActivityBar(name) {
-  activityBar.value = name
-  if (data.postedWorkFileList[name].storageType === 'pictureKey') {
-    loadImage(name);
-  }
-}
-
 const images = ref([]);
 
-const loadImage = async (index) => {
-  if (!images.value[index]) {
-    images.value[index] = await getPngByKey(data.postedWorkFileList[index].fileContent);
+async function changeActivityBar(name) {
+  if (typeof name === "number") {
+    activityBar.value = name;
+    const workFile = data.postedWorkFileList[name];
+
+    if (!images.value[name]) {
+      images.value[name] = {descriptionPictures: []};
+    }
+
+    if (!images.value[name].fileContent && workFile.storageType === 'pictureKey') {
+      images.value[name].fileContent = await getWebPByKey(workFile.fileContent);
+    }
+
+    if (images.value[name].descriptionPictures.length === 0 && workFile.descriptionPictures && workFile.descriptionPictures.length > 0) {
+      images.value[name].descriptionPictures = await Promise.all(
+          workFile.descriptionPictures.map(picture => getWebPByKey(picture))
+      );
+    }
   }
-};
+}
 
 // 将已发布作业加入回收箱
 const addWorkFileToRecycling = async (id) => {
@@ -81,7 +89,7 @@ const showFileContent = ref(false) //是否显示作业文件内容
 //每次显示作业文件内容时，重新高亮JSON数据
 watch(showFileContent, (newValue) => {
   if (newValue === true) {
-    hljs.initHighlightingOnLoad();
+    hljs.highlightAll();
   }
 });
 
@@ -92,7 +100,7 @@ const update = async () => {
 
 onMounted(async () => {
   await screenPostedWorkFileList(simpleSearch)
-  // console.log(data.postedWorkFileList)
+  console.log(data.postedWorkFileList)
 });
 </script>
 
@@ -188,8 +196,8 @@ onMounted(async () => {
                 </pre>
                 <el-image
                     v-else-if="workFile.storageType==='pictureKey'&&index===activityBar"
-                    :preview-src-list="[images[index]]"
-                    :src="images[index]"
+                    :preview-src-list="[images[index].fileContent]"
+                    :src="images[index].fileContent"
                     fit="fill"
                     style="margin-top: 10px"
                 >
@@ -209,15 +217,38 @@ onMounted(async () => {
           <!--作业描述-->
           <div v-if="workFile.description!==''">
             <span class="caption">作业描述</span>
-            <!--            <div class="workFile-content-description">-->
-            <!--              {{ workFile.description }}-->
-            <!--            </div>-->
             <markdown-preview
                 :description="workFile.description"
+                :vditorId="index.toString()"
                 class="drawer-markdown-container"
             />
           </div>
           <div v-else class="none-caption" style="color: grey">无作业描述</div>
+
+          <!--作业描述图片-->
+          <div
+              v-if="index===activityBar && images[index] && images[index].descriptionPictures && images[index].descriptionPictures.length > 0">
+            <span class="caption">作业描述图片</span>
+            <div class="description-pictures-container">
+              <el-image
+                  v-for="url in images[index].descriptionPictures"
+                  :key="url"
+                  :preview-src-list="images[index].descriptionPictures"
+                  :src="url"
+                  class="description-pictures"
+                  fit="cover"
+                  lazy
+              >
+                <template #error>
+                  <div class="image-slot">
+                    <el-icon>
+                      <Picture/>
+                    </el-icon>
+                  </div>
+                </template>
+              </el-image>
+            </div>
+          </div>
 
           <!--干员精英化要求展示-->
           <div v-if="workFile.fileRequest.requestElite?.length > 0">

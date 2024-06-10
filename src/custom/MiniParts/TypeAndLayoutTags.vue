@@ -60,7 +60,7 @@ const props = defineProps({
 
 <style scoped lang="scss">
 span {
-  display: flex;
+  display: inline-flex;
   gap: 5px;
 }
 </style>

@@ -14,8 +14,31 @@
     font-size: 30px;
 }
 
+/*作业描述图片大小*/
+.description-pictures {
+    width: 100px;
+    height: 100px;
+}
+
+/*作业描述图片展示容器*/
+.description-pictures-container{
+    display: flex;
+    justify-content: start;
+    align-items: center;
+    gap: 5px;
+    margin: 10px 0;
+    padding:10px 0;
+
+    .el-image{
+        border:1px solid #d3d3d3;
+        border-radius: 3px;
+    }
+}
+
+
+
 /*简单搜索筛选栏样式*/
-.simple-search-bar{
+.simple-search-bar {
     display: flex;
     flex-wrap: wrap;
     justify-content: center;

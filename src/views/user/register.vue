@@ -55,7 +55,7 @@
 import {ElMessage} from "element-plus";
 import {buttonLabel, initSendTimes, updateCooldown} from "@/utils/sendCodeCooldown.js";
 import axios from "@/utils/axios.js"
-import {tipMessage, tipMessageFromSingleResult, tipRegisterMessage} from "@/utils/messageHanding.js";
+import {tipMessageFromSingleResult} from "@/utils/messageHanding.js";
 import {tryToSendCode} from "@/utils/sendCode.js";
 import {useRouter} from "vue-router";
 

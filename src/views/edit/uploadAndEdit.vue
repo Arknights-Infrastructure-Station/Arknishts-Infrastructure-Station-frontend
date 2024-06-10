@@ -1,6 +1,6 @@
 <script setup>
 import {ElMessage} from "element-plus";
-import {isJsonFile} from "@/utils/checkWorkFile.js";
+import {isJsonFile} from "@/utils/check.js";
 import operatorTable from "@/static/json/character_table_simple.json";
 import {useCreateOrEditWorkFileData} from "@/store/createOrEditWorkFileData.js";
 import axios from "@/utils/axios.js"
@@ -11,6 +11,9 @@ import OperatorCards from "@/custom/setOperators/OperatorCards.vue";
 import NecessaryMarking from "@/custom/MiniParts/NecessaryMarking.vue";
 import {editState} from "@/static/state/editState.js";
 import MarkdownEditor from "@/components/markdown/MarkdownEditor.vue";
+import {useDraggable} from 'vue-draggable-plus'
+import Compressor from 'compressorjs';
+
 
 const createOrEditWorkFileData = useCreateOrEditWorkFileData();
 
@@ -21,6 +24,7 @@ const workFile = reactive({
   type: '', //作业类型
   layout: '', //作业采用的基建布局
   description: '', //作业描述
+  descriptionPictures: [], //作业描述图片
   storageType: '', //作业内容存储类型
   fileContent: '', //作业文件数据
   enableRequestElite: false, //是否启用干员精英化要求
@@ -30,10 +34,6 @@ const workFile = reactive({
     requestInfrastructure: []
   }
 }) //作业需求的基建布局等级要求
-
-// watch(()=>workFile.description,()=>{
-//   console.log(workFile.description)
-// })
 
 const defaultRequestInfrastructure = [
   {name: 'central', level: 5},
@@ -62,16 +62,110 @@ const activeNames = ref([]); // 控制折叠面板的展开和折叠
 
 const fileName = ref('') //获取到的文件名
 
+//动态调整允许上传的作业文件类型
+const approvalUploadType = computed(() => {
+  if (workFile.type === 'Mower') {
+    return '.json,.jpeg,.jpg,.png,.webp'
+  } else {
+    return '.json'
+  }
+})
+
+const approvalPictureType = ['image/png', 'image/jpeg', 'image/jpg', 'image/webp']
+
+const validateWorkFileType = async (file) => {
+  if (workFile.type === 'Mower') {
+    const isJson = await isJsonFile(file, workFile.type);
+    return isJson || approvalPictureType.includes(file.type);
+  } else {
+    return await isJsonFile(file);
+  }
+};
+
+const determineSize = (file) => {
+  // 如果没有文件被选中，不合格
+  if (!file) {
+    return false;
+  }
+
+  // 文件大小限制为2MB以内
+  const maxSizeInBytes = 2 * 1024 * 1024;
+  if (file.size > maxSizeInBytes) {
+    ElMessage.error('上传的文件大小不能超过2MB');
+    return false;
+  }
+
+  return true
+}
+
+/**
+ * 检测上传的图片后缀名的文件是否真的是图片文件
+ */
+const isValidImage = (file) => {
+  return new Promise((resolve) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const arr = new Uint8Array(e.target.result).subarray(0, 4);
+      let header = '';
+      for (let i = 0; i < arr.length; i++) {
+        header += arr[i].toString(16);
+      }
+      // 验证图片头 PNG, JPEG, JPG, WEBP
+      const validHeaders = ['89504e47', 'ffd8ffe0', 'ffd8ffe1', 'ffd8ffe2', '52494646'];
+      resolve(validHeaders.includes(header));
+    };
+    reader.readAsArrayBuffer(file);
+  });
+};
+
+const handleWorkFileUploadChange = async (event) => {
+  const file = event.target.files[0]
+  if (determineSize(file)) {
+    const isValid = await validateWorkFileType(file);
+
+    if (isValid) {
+      await handleWorkFileUpload(file);
+    } else {
+      ElMessage.error(workFile.type === 'Mower' ? '上传的文件必须为JSON、PNG、JPEG、JPG或WEBP格式' : '上传的文件必须符合JSON格式');
+    }
+  }
+};
+
 //storageType的值依赖于后端StorageType枚举类的值
-const handleFileUpload = async (file, fileType) => {
-  if (fileType === 'json') {
+const handleWorkFileUpload = async (file) => {
+  const fileType = file.type;
+
+  if (fileType === 'application/json') {
     workFile.fileContent = await file.text();
-    workFile.storageType = 'text'
-  } else if (fileType === 'png') {
+    workFile.storageType = 'text';
+  } else if (fileType !== 'image/webp') {
+    const isValid = await isValidImage(file);
+    if (!isValid) {
+      ElMessage.error('文件内容不是有效的图片');
+      return;
+    }
+
+    new Compressor(file, {
+      quality: 0.6,
+      convertSize: Infinity,
+      mimeType: 'image/webp',
+      success(result) {
+        const reader = new FileReader();
+        reader.onload = () => {
+          workFile.fileContent = reader.result;
+          workFile.storageType = 'pictureKey';
+        };
+        reader.readAsDataURL(result);
+      },
+      error(err) {
+        ElMessage.error('图片压缩失败：' + err.message);
+      },
+    });
+  } else {
     const reader = new FileReader();
     reader.onload = () => {
       workFile.fileContent = reader.result;
-      workFile.storageType = 'pictureKey'
+      workFile.storageType = 'pictureKey';
     };
     reader.readAsDataURL(file);
   }
@@ -82,11 +176,73 @@ const handleFileUpload = async (file, fileType) => {
   } else {
     fileName.value = file.name; // 文件名显示栏本就为空，不需要留有淡出的动画时长
   }
+
   if (workFile.name === '') {
-    workFile.name = file.name.replace(fileType === 'json' ? '.json' : '.png', ''); // 如果作业名称为空，则自动将作业名称改为文件名称
+    const extension = file.name.split('.').pop();
+    workFile.name = file.name.replace(new RegExp(`\\.${extension}$`), '');
   }
-  ElMessage.success(`${fileType.toUpperCase()}文件上传成功`);
+  ElMessage.success(`${fileType.toUpperCase().split('/')[1]}文件上传成功`);
 };
+
+const handleDescriptionPicturesUploadChange = async (event) => {
+  const pictures = Array.from(event.target.files);
+  for (let i = 0; i < pictures.length; i++) {
+    const picture = pictures[i];
+    if (!approvalPictureType.includes(picture.type)) {
+      ElMessage.error(`选中的第 ${i + 1} 个文件格式不合法`);
+      continue;
+    }
+
+    if (determineSize(picture)) {
+      const isValid = await isValidImage(picture);
+      if (!isValid) {
+        ElMessage.error(`第 ${i + 1} 个文件内容不是有效的图片`);
+        continue;
+      }
+
+      new Compressor(picture, {
+        quality: 0.6,
+        convertSize: Infinity,
+        mimeType: 'image/webp',
+        success(result) {
+          const reader = new FileReader();
+          reader.onload = () => {
+            // 将新的图片追加到数组末尾
+            workFile.descriptionPictures.push(reader.result);
+            // 移除最早添加的图片
+            while (workFile.descriptionPictures.length > 5) {
+              workFile.descriptionPictures.shift();
+            }
+          };
+          reader.readAsDataURL(result);
+        },
+        error(err) {
+          console.error(err.message);
+          ElMessage.error('图片压缩失败');
+        },
+      });
+    } else {
+      ElMessage.error(`第 ${i + 1} 张图片过大`);
+    }
+  }
+};
+
+
+onMounted(() => {
+  document.querySelector('#workFile-upload').addEventListener('change', handleWorkFileUploadChange);
+  document.querySelector('#description-picture-upload').addEventListener('change', handleDescriptionPicturesUploadChange);
+});
+
+//图片移除
+const removePicture = (index) => {
+  workFile.descriptionPictures.splice(index, 1);
+};
+
+//图片预览拖拽
+const picturesPreview = ref()
+const draggable = useDraggable(picturesPreview, toRefs(workFile).descriptionPictures, {
+  animation: 150
+})
 
 //匹配检测
 watchEffect(() => {
@@ -96,54 +252,6 @@ watchEffect(() => {
     ElMessage.info('作业类型和作业格式不匹配');
   }
 });
-
-onMounted(async () => {
-  document.querySelector('#upload').addEventListener('change', async function (event) {
-    const file = event.target.files[0];
-
-    // 如果没有文件被选中，直接返回
-    if (!file) {
-      return;
-    }
-
-    // 文件大小限制为3MB以内
-    const maxSizeInBytes = 3 * 1024 * 1024;
-    if (file.size > maxSizeInBytes) {
-      ElMessage.error('上传的文件大小不能超过3MB');
-      return;
-    }
-
-    // if (await isJsonFile(file)) {
-    //   workFile.fileContent = await file.text()
-    //   if (fileName.value !== '') {
-    //     fileName.value = '' //更新动画
-    //     setTimeout(() => fileName.value = file.name, 800) //更新获取到的文件名，延迟一些时间（该时间与淡出淡入的动画时间保持一致），给予动画能够完整渲染
-    //   } else fileName.value = file.name //文件名显示栏本就为空，不需要留有淡出的动画时长
-    //   if (workFile.name === '') workFile.name = file.name.replace('.json', '') //如果作业名称为空，则自动将作业名称改为文件名称
-    //   ElMessage.success('文件解析成功')
-    // } else ElMessage.error('上传的文件必须符合JSON格式')
-
-    // 判断文件类型
-    if (workFile.type === 'Mower') {
-      const isJson = await isJsonFile(file, workFile.type);
-      const isPng = file.type === 'image/png';
-
-      if (isJson) {
-        await handleFileUpload(file, 'json');
-      } else if (isPng) {
-        await handleFileUpload(file, 'png');
-      } else {
-        ElMessage.error('上传的文件必须为JSON或PNG格式');
-      }
-    } else {
-      if (await isJsonFile(file)) {
-        await handleFileUpload(file, 'json');
-      } else {
-        ElMessage.error('上传的文件必须符合JSON格式');
-      }
-    }
-  })
-})
 
 //手动移除已解析的文件
 function removeFileName() {
@@ -208,6 +316,7 @@ async function addToStagingWorkFile() {
     type: workFile.type,
     layout: workFile.layout,
     description: workFile.description,
+    descriptionPictures: JSON.stringify(cloneDeep(workFile.descriptionPictures)),
     storageType: workFile.storageType,
     fileContent: workFile.fileContent,
     fileRequest: JSON.stringify({
@@ -264,6 +373,7 @@ async function submitWorkFile() {
       type: workFile.type,
       layout: workFile.layout,
       description: workFile.description,
+      descriptionPictures: JSON.stringify(cloneDeep(workFile.descriptionPictures)),
       storageType: workFile.storageType,
       fileContent: workFile.fileContent,
       fileRequest: JSON.stringify({
@@ -376,6 +486,8 @@ onMounted(() => {
   if (workFile.enableRequestElite || workFile.enableRequestInfrastructure) {
     activeNames.value.push('1')
   }
+
+  // console.log(workFile)
 })
 
 onUnmounted(() => {
@@ -425,11 +537,6 @@ onUnmounted(() => {
           作业类型
         </template>
         <el-segmented v-model="workFile.type" :options="['MAA','Mower','其它']" size="default"/>
-        <!--                <el-radio-group v-model="workFile.type">-->
-        <!--                  <el-radio-button label="MAA"/>-->
-        <!--                  <el-radio-button label="Mower"/>-->
-        <!--                  <el-radio-button label="其它"/>-->
-        <!--                </el-radio-group>-->
       </el-form-item>
       <el-form-item>
         <template #label>
@@ -441,6 +548,56 @@ onUnmounted(() => {
       <el-form-item label="作业描述">
         <markdown-editor v-model="workFile.description"/>
       </el-form-item>
+      <el-form-item label="作业描述图片">
+        <input id="description-picture-upload" accept=".jpeg,.jpg,.png,.webp" multiple style="display: none;"
+               type="file">
+        <el-tooltip
+            class="box-item"
+            content="允许JPEG、JPG、PNG、WEBP图片格式，最多允许上传5张图片，每张图片的大小不得大于2M"
+            effect="light"
+            placement="right"
+        >
+          <label class="el-button" for="description-picture-upload">
+            上传作业描述图片
+          </label>
+        </el-tooltip>
+      </el-form-item>
+      <transition name="float-io">
+        <el-form-item v-show="workFile.descriptionPictures&&workFile.descriptionPictures.length>0" label="描述图片预览">
+          <transition-group
+              ref="picturesPreview"
+              class="description-pictures-preview"
+              name="float-io"
+              tag="div"
+          >
+            <div v-for="(url, index) in workFile.descriptionPictures" :key="index" class="picture-container">
+              <el-image
+                  :preview-src-list="workFile.descriptionPictures"
+                  :src="url"
+                  class="description-pictures"
+                  fit="cover"
+                  lazy
+              >
+                <template #error>
+                  <div class="image-slot">
+                    <el-icon>
+                      <Picture/>
+                    </el-icon>
+                  </div>
+                </template>
+              </el-image>
+              <el-button
+                  class="remove-button"
+                  icon="Delete"
+                  plain
+                  size="small"
+                  type="danger"
+                  @click="removePicture(index)"
+              />
+            </div>
+          </transition-group>
+        </el-form-item>
+      </transition>
 
       <!--上传作业文件-->
       <el-form-item>
@@ -448,14 +605,14 @@ onUnmounted(() => {
           <NecessaryMarking/>
           上传作业文件
         </template>
-        <input id="upload" accept=".json,.png" style="display: none;" type="file">
+        <input id="workFile-upload" :accept="approvalUploadType" style="display: none;" type="file">
         <el-tooltip
             class="box-item"
-            content="若您想上传png格式的作业文件，请先选中作业类型项的“Mower”"
+            content="若您想上传图片格式的作业文件，请先选中作业类型项的“Mower”"
             effect="light"
             placement="right"
         >
-          <label class="file-upload" for="upload">
+          <label class="file-upload" for="workFile-upload">
             上传作业文件
           </label>
         </el-tooltip>
@@ -630,6 +787,28 @@ onUnmounted(() => {
 /* 当按钮被按下时的样式 */
 .file-upload:active {
   background-color: #0000af;
+}
+
+.picture-container {
+  position: relative;
+  display: inline-block;
+}
+
+.description-pictures-preview {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: start;
+  align-items: center;
+  gap: 5px;
+}
+
+//作业描述图片移除按钮
+.remove-button {
+  position: absolute;
+  top: 0;
+  right: 0;
+  z-index: 1;
+  width: 4px;
 }
 
 /*显示读取到的文件名*/

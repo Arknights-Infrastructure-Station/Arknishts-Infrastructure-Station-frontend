@@ -1,5 +1,5 @@
 import axios from "@/utils/axios.js";
-import {tipErrorMessage, tipErrorMessageFromSingleResult, tipMessage} from "@/utils/messageHanding.js";
+import {tipErrorMessage, tipMessage} from "@/utils/messageHanding.js";
 import {ElMessage} from "element-plus";
 import {adaptMower} from "@/utils/adapter.js";
 
@@ -79,12 +79,12 @@ export async function getStarListForUser(hasTip = true) {
 
 /**
  * 收藏某个作业
- * @param wid 作业id
+ * @param id 作业id
  * @returns {Promise<void>} 操作结果
  */
-export async function starWorkFile(wid) {
+export async function starWorkFile(id) {
     try {
-        const response = await axios.post('/starRecord/starWorkFile', wid);
+        const response = await axios.post('/starRecord/starWorkFile', {wid: id});
         tipMessage(response)
     } catch (error) {
         ElMessage.error(`收藏作业失败: ${error.response?.data?.operateResult?.message || error.message}`);
@@ -93,12 +93,12 @@ export async function starWorkFile(wid) {
 
 /**
  * 取消收藏某个作业
- * @param wid 作业id
+ * @param id 作业id
  * @returns {Promise<void>} 操作结果
  */
-export async function unstarWorkFile(wid) {
+export async function unstarWorkFile(id) {
     try {
-        const response = await axios.post('/starRecord/unstarWorkFile', wid);
+        const response = await axios.post('/starRecord/unstarWorkFile', {wid: id});
         tipMessage(response)
     } catch (error) {
         ElMessage.error(`取消收藏作业失败: ${error.response?.data?.operateResult?.message || error.message}`);
@@ -106,17 +106,17 @@ export async function unstarWorkFile(wid) {
 }
 
 /**
- * 根据键从对象存储服务中获取PNG文件的数据URL
+ * 根据键从对象存储服务中获取图片文件的数据URL
  *
  * @param {string} key 对象存储服务中的键
- * @returns {Promise<string>} 对应的PNG文件的数据URL
+ * @returns {Promise<string>} 对应的图片文件的数据URL
  */
-export async function getPngByKey(key) {
+export async function getWebPByKey(key) {
     try {
-        const response = await axios.get(`/api/png/${key}`);
+        const response = await axios.get(`/api/webp/${key}`);
         return response.data;
     } catch (error) {
-        ElMessage.error(`png文件url获取失败: ${error}`);
+        ElMessage.error(`webp文件url获取失败: ${error}`);
     }
 }
 
@@ -174,7 +174,7 @@ export async function downloadWorkFile(workFileDetail) {
         if (workFileDetail.storageType === 'pictureKey') {
             try {
                 const base64Data = workFileDetail.fileContent;
-                const base64Prefix = 'data:image/png;base64,';
+                const base64Prefix = 'data:image/webp;base64,';
                 const base64Index = base64Data.indexOf(base64Prefix);
 
                 if (base64Index !== -1) {
@@ -185,10 +185,10 @@ export async function downloadWorkFile(workFileDetail) {
                         byteNumbers[i] = byteCharacters.charCodeAt(i);
                     }
                     const byteArray = new Uint8Array(byteNumbers);
-                    blob = new Blob([byteArray], {type: "image/png"});
-                    fileExtension = 'png';
+                    blob = new Blob([byteArray], {type: "image/webp"});
+                    fileExtension = 'webp';
                 } else {
-                    throw new Error("Invalid Base64 string format.");
+                    ElMessage.error("无效的Base64字符串格式");
                 }
             } catch (error) {
                 ElMessage.error("图片解码错误: " + error.message);
@@ -204,10 +204,11 @@ export async function downloadWorkFile(workFileDetail) {
     }
 
     try {
-        await axios.post('/download/increaseDownloadCount', workFileDetail.id);
+        await axios.post('/download/increaseDownloadCount', {
+            wid: workFileDetail.id
+        });
     } catch (error) {
-        ElMessage.error("作业解析错误: " + error.message);
-        return;
+        ElMessage.error("作业下载记录请求错误: " + error.message);
     }
 
     const url = URL.createObjectURL(blob);

@@ -1,7 +1,3 @@
-import {ElMessage} from "element-plus";
-import axios from "@/utils/axios.js";
-import {adaptMower} from "@/utils/adapter.js";
-
 function parseDate(dateString) {
     const parts = dateString.match(/(\d+)/g);
     return new Date(parts[0], parts[1] - 1, parts[2], parts[3], parts[4], parts[5]);
@@ -71,7 +67,6 @@ function deepParseJSON(obj) {
         return obj;
     }
 }
-
 
 
 export {parseDate, formatDate, compressData, saveToLocalStorage, getFromLocalStorage, formatJSON}

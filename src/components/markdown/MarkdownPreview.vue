@@ -5,7 +5,11 @@ const props = defineProps({
   description: {
     type: String,
     default: ''
-  }
+  },
+  vditorId: {
+    type: String,
+    default: '1'
+  },
 })
 
 const isLoading = ref(true)
@@ -24,7 +28,7 @@ function initVditor() {
       enable: false
     }
   }
-  vditor = new Vditor('previewVditor', option)
+  vditor = new Vditor(props.vditorId, option)
   nextTick(() => isLoading.value = false)
 }
 
@@ -36,7 +40,7 @@ onMounted(() => {
 
 <template>
   <div class="preview-vditor" v-loading="isLoading" element-loading-text="正在努力，请稍候...">
-    <div id="previewVditor" class="vditor-preview"/>
+    <div :id="vditorId" class="vditor-preview"/>
   </div>
 </template>
 

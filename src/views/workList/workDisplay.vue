@@ -7,9 +7,9 @@ import PureInfrastructureTable from "@/custom/setInfrastructure/PureInfrastructu
 import {useData} from "@/store/globalData.js";
 import {
   downloadWorkFile,
-  getPngByKey,
   getRateRecordsForUser,
   getStarListForUser,
+  getWebPByKey,
   rate,
   starWorkFile,
   unstarWorkFile
@@ -26,13 +26,13 @@ const refreshFlag = useRefreshFlag()
 
 // 查看作业细节
 const workFileDetailVisible = ref(false);
-const showFileContent = ref(false)
 const workFileDetail = reactive({})
+const webp = reactive(new Map()) //以防重复加载图片
 
 let originStarState = false //作业收藏状态备份，只有在收藏状态与备份状态不同时（用户做了修改），才调用收藏/取消收藏接口
 let originScore = -1
 const seeDetail = (row) => {
-  Object.assign(workFileDetail, row)
+  Object.assign(workFileDetail, cloneDeep(row))
   workFileDetailVisible.value = true
 
   //在抽屉被打开时，初始化该作业的收藏状态
@@ -50,14 +50,29 @@ const seeDetail = (row) => {
 };
 const codeBox = ref()
 const drawerOpened = async () => {
+  if (!webp.has(workFileDetail.id)) {
+    webp.set(workFileDetail.id, {
+      descriptionPictures: []
+    })
+  }
+  const webpStore = webp.get(workFileDetail.id)
+
   if (workFileDetail.storageType === 'text') {
     delete codeBox.value.dataset?.highlighted;
     hljs.highlightAll()
     codeBox.value.style.borderRadius = '4px'
     codeBox.value.style.border = '1px solid #bbbbbb'
     codeBox.value.style.marginTop = '-17px'
-  } else if (workFileDetail.storageType === 'pictureKey') {
-    workFileDetail.fileContent = await getPngByKey(workFileDetail.fileContent)
+  } else if (workFileDetail.storageType === 'pictureKey' && !webpStore.fileContent) {
+    //如果以图片形式存储，获取图片编码内容
+    webpStore.fileContent = await getWebPByKey(workFileDetail.fileContent)
+  }
+
+  if (webpStore.descriptionPictures.length === 0 && workFileDetail.descriptionPictures !== null && workFileDetail.descriptionPictures.length > 0) {
+    for (let i = 0; i < workFileDetail.descriptionPictures.length; i++) {
+      //加载所有的图片编码
+      webpStore.descriptionPictures[i] = await getWebPByKey(workFileDetail.descriptionPictures[i])
+    }
   }
 }
 
@@ -199,8 +214,10 @@ onMounted(async () => {
     </div>
     <div style="display: flex;flex-wrap: wrap;align-items: center;gap: 10px;margin-bottom: -12px">
       <h2>{{ workFileDetail.name }}</h2>
-      <TypeAndLayoutTags :layout="workFileDetail.layout" :type="workFileDetail.type"
-                         style="transform: translateY(2px)"/>
+      <TypeAndLayoutTags
+          :layout="workFileDetail.layout"
+          :type="workFileDetail.type"
+          style="transform: translateY(2px)"/>
     </div>
 
     <div class="drawer-mark-text-container">
@@ -234,6 +251,29 @@ onMounted(async () => {
         class="drawer-markdown-container"
     />
 
+    <div
+        v-if="webp.get(workFileDetail.id) && webp.get(workFileDetail.id).descriptionPictures.length > 0"
+        class="description-pictures-container">
+      <el-image
+          v-for="url in webp.get(workFileDetail.id).descriptionPictures"
+          :key="url"
+          :preview-src-list="webp.get(workFileDetail.id).descriptionPictures"
+          :src="url"
+          class="description-pictures"
+          fit="cover"
+          lazy
+      >
+        <template #error>
+          <div class="image-slot">
+            <el-icon>
+              <Picture/>
+            </el-icon>
+          </div>
+        </template>
+      </el-image>
+    </div>
+
+
     <table v-if="workFileDetail.fileRequest.requestElite?.length > 0"
            class="requestElite-table">
       <tr v-for="operatorRequest in eliteSort(workFileDetail.fileRequest.requestElite)" class="requestElite-tr">
@@ -262,9 +302,9 @@ onMounted(async () => {
       </code>
     </pre>
     <el-image
-        v-else-if="workFileDetail.storageType==='pictureKey'"
-        :preview-src-list="[workFileDetail.fileContent]"
-        :src="workFileDetail.fileContent"
+        v-else-if="webp.get(workFileDetail.id) && workFileDetail.storageType==='pictureKey'"
+        :preview-src-list="[webp.get(workFileDetail.id).fileContent]"
+        :src="webp.get(workFileDetail.id).fileContent"
         fit="fill"
         style="margin-top: 10px"
     >

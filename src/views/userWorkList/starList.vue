@@ -10,8 +10,8 @@ import {ElMessage} from "element-plus";
 import {useData} from "@/store/globalData.js";
 import {
   downloadWorkFile,
-  getPngByKey,
   getStarListForUser,
+  getWebPByKey,
   screenStaredWorkFileList,
   unstarWorkFile
 } from "@/api/callEndpoint.js";
@@ -42,22 +42,6 @@ records和单独删除放入回收箱中的作业的记录不冲突
 2.当被放入回收箱中的作业对应的收藏记录被删除时，新查询的staredWorkFileList不会包含被单独删除的作业
  */
 const records = reactive([]); //记录所有已加载的收藏记录
-
-onMounted(()=>{
-  //初始化数据
-  data.staredWorkFileList.forEach((item) => {
-    records.push({
-      id: item.id,
-      isStar: true,
-      showFileDetail: false,
-      showFileContent: false
-    });
-  })
-})
-
-//定义图片字符串Map
-const png = reactive(new Map())
-
 watch(() => data.staredWorkFileList, (newList) => {
   newList.forEach((item) => {
     const existingRecord = records.find(record => record.id === item.id);
@@ -75,30 +59,50 @@ watch(() => data.staredWorkFileList, (newList) => {
   });
 }, {deep: true});
 
+//定义图片字符串Map
+const webp = reactive(new Map())
+
 watchEffect(async () => {
   for (const record of records) {
-    if (record.showFileDetail === false) {
+    if (!record.showFileDetail) {
       record.showFileContent = false;
-    }
-    if (record.showFileContent) {
-      /*
-      当展示作业内容时，
-      若作业存储类型为text，则重新高亮代码块；
-      若作业存储类型为pictureKey，则调用后端接口获取图片key对应的value（基于Base64的图片字符串）
-       */
+    } else {
       const workFile = data.staredWorkFileList.find(workFile => workFile.id === record.id)
-      console.log(workFile)
-      if (workFile.storageType === 'text')
-        hljs.highlightAll();
-      else if (workFile.storageType === 'pictureKey' && !png.has(workFile.id))
-        png.set(workFile.id, await getPngByKey(workFile.fileContent))
+      if (!webp.has(workFile.id)) {
+        webp.set(workFile.id, {})
+      }
+      const webpStore = webp.get(workFile.id);
+
+      if (!webpStore.descriptionPictures
+          && workFile.descriptionPictures !== null
+          && workFile.descriptionPictures.length > 0) {
+        webpStore.descriptionPictures = []
+        for (let i = 0; i < workFile.descriptionPictures.length; i++) {
+          webpStore.descriptionPictures[i] = await getWebPByKey(workFile.descriptionPictures[i])
+        }
+      }
+
+      if (record.showFileContent) {
+        /*
+        当展示作业内容时，
+        若作业存储类型为text，则重新高亮代码块；
+        若作业存储类型为pictureKey，则调用后端接口获取图片key对应的value（基于Base64的图片字符串）
+         */
+        if (workFile.storageType === 'text')
+          hljs.highlightAll();
+        else if (workFile.storageType === 'pictureKey') {
+          if (!webpStore.fileContent) {
+            webpStore.fileContent = await getWebPByKey(workFile.fileContent)
+          }
+        }
+      }
     }
   }
 });
 
 async function tryDownload(workFile) {
   if (workFile.storageType === 'pictureKey')
-    workFile.fileContent = await getPngByKey(workFile.fileContent)
+    workFile.fileContent = await getWebPByKey(workFile.fileContent)
   await downloadWorkFile(workFile)
 }
 
@@ -130,9 +134,22 @@ const update = async () => {
   await getStarListForUser()
 }
 
+const recordsLoaded = ref(false)
 onMounted(async () => {
   await screenStaredWorkFileList(simpleSearch)
   await getStarListForUser()
+
+  //初始化数据
+  data.staredWorkFileList.forEach((item) => {
+    records.push({
+      id: item.id,
+      isStar: true,
+      showFileDetail: false,
+      showFileContent: false
+    });
+  })
+
+  recordsLoaded.value = true
 });
 
 onBeforeUnmount(async () => {
@@ -174,7 +191,7 @@ onBeforeUnmount(async () => {
           layout="total, sizes, prev, pager, next, jumper"
       />
     </div>
-    <div class="workFile-cards">
+    <div v-if="recordsLoaded" class="workFile-cards">
       <el-card v-for="(workFile,index) in data.staredWorkFileList" :key="index" class="workFile-card"
                shadow="hover">
         <div
@@ -255,7 +272,6 @@ onBeforeUnmount(async () => {
         <el-collapse-transition>
           <div v-if="records.find(record => record.id === workFile.id).showFileDetail">
             <el-divider
-                v-if="records.find(record => record.id === workFile.id).showFileDetail"
                 border-style="dashed"
                 style="user-select: none"
                 @click="records.find(record => record.id === workFile.id).showFileDetail=false"
@@ -282,8 +298,8 @@ onBeforeUnmount(async () => {
                   </pre>
                   <el-image
                       v-else-if="workFile.storageType==='pictureKey'"
-                      :preview-src-list="[png.get(workFile.id)]"
-                      :src="png.get(workFile.id)"
+                      :preview-src-list="[webp.get(workFile.id).fileContent]"
+                      :src="webp.get(workFile.id).fileContent"
                       fit="fill"
                       style="margin-top: 10px"
                   >
@@ -311,6 +327,30 @@ onBeforeUnmount(async () => {
               />
             </div>
             <div v-else class="none-caption" style="color: grey">无作业描述</div>
+
+            <!--作业描述图片-->
+            <div v-if="webp.get(workFile.id).descriptionPictures&&webp.get(workFile.id).descriptionPictures.length>0">
+              <span class="caption">作业描述图片</span>
+              <div class="description-pictures-container">
+                <el-image
+                    v-for="url in webp.get(workFile.id).descriptionPictures"
+                    :key="url"
+                    :preview-src-list="webp.get(workFile.id).descriptionPictures"
+                    :src="url"
+                    class="description-pictures"
+                    fit="cover"
+                    lazy
+                >
+                  <template #error>
+                    <div class="image-slot">
+                      <el-icon>
+                        <Picture/>
+                      </el-icon>
+                    </div>
+                  </template>
+                </el-image>
+              </div>
+            </div>
 
             <!--干员精英化要求展示-->
             <div

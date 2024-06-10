@@ -1,7 +1,4 @@
-//作业文件检查，只能是JSON文件，且符合MAA或Mower格式
-import {ElMessage} from "element-plus";
-
-export {isJsonFile}
+export {isJsonFile, isNumeric}
 
 /**
  * 检查文件是否是JSON文件
@@ -15,11 +12,12 @@ async function isJsonFile(file, type = 'MAA') {
         JSON.parse(text); // 尝试解析文件内容
         return true; // 文件内容是有效的 JSON ，准许上传
     } catch (error) {
-        if (type !== 'Mower') {
-            // Mower可以上传png文件
-            ElMessage.error('文件内容不是有效的 JSON 格式');
-        }
         return false; // 拒绝上传
     }
+}
+
+function isNumeric(str) {
+    if (typeof str != "string") return false; // 确保输入是一个字符串
+    return !isNaN(str) && !isNaN(parseFloat(str)); // 检查是否为数字
 }
 

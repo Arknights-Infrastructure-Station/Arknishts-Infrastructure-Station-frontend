@@ -100,7 +100,7 @@ const update = async () => {
 
 onMounted(async () => {
   await screenPostedWorkFileList(simpleSearch)
-  console.log(data.postedWorkFileList)
+  // console.log(data.postedWorkFileList)
 });
 </script>
 

@@ -190,6 +190,7 @@ watchEffect(() => {
 // 在组件挂载时调用后端接口获取作业文件列表
 onMounted(async () => {
   await updateFilterData()
+  // console.log(data.workFileList)
 });
 </script>
 

@@ -102,7 +102,7 @@ const clearLocalStorage = () => {
                   MAA
                 </el-menu-item>
                 <el-menu-item @click="openLink('#')">
-                  Mower
+                  Mower（暂无链接）
                 </el-menu-item>
               </el-sub-menu>
               <el-menu-item index="/tools/infraStat/uploadAndEdit">

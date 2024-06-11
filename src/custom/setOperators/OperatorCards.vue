@@ -42,7 +42,7 @@ function removeOperator(charId) {
     </div>
 
     <!--不可编辑-->
-    <el-card v-if="editLevel <= 0" v-for="operator in operators" :key="operator.value" shadow="none">
+    <el-card v-if="editLevel <= 0" v-for="operator in operators" :key="operator.value" shadow="never">
       <div class="operator-image" :class="`bg-${operator.charId}`"/>
       <span class="elite-text" :class="`elite-state${operator.elite}`">精英 {{
           operator.elite

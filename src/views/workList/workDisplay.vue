@@ -199,7 +199,13 @@ onMounted(async () => {
           class="drawer-header-button"
           plain
           type="info"
-          @click="() => downloadWorkFile(workFileDetail)"
+          @click="() => downloadWorkFile({
+          id:workFileDetail.id,
+          name:workFileDetail.name,
+          type:workFileDetail.type,
+          storageType:workFileDetail.storageType,
+          fileContent:webp.get(workFileDetail.id).fileContent,
+          })"
       >
         下载作业
       </el-button>

@@ -170,35 +170,33 @@ export async function downloadWorkFile(workFileDetail) {
     let blob;
     let fileExtension = 'json';
 
-    if (workFileDetail.type === 'Mower') {
-        if (workFileDetail.storageType === 'pictureKey') {
-            try {
-                const base64Data = workFileDetail.fileContent;
-                const base64Prefix = 'data:image/webp;base64,';
-                const base64Index = base64Data.indexOf(base64Prefix);
+    if (workFileDetail.storageType === 'pictureKey') {
+        try {
+            const base64Data = workFileDetail.fileContent;
+            const base64Prefix = 'data:image/webp;base64,';
+            const base64Index = base64Data.indexOf(base64Prefix);
 
-                if (base64Index !== -1) {
-                    const pureBase64Data = base64Data.substring(base64Index + base64Prefix.length);
-                    const byteCharacters = atob(pureBase64Data);
-                    const byteNumbers = new Array(byteCharacters.length);
-                    for (let i = 0; i < byteCharacters.length; i++) {
-                        byteNumbers[i] = byteCharacters.charCodeAt(i);
-                    }
-                    const byteArray = new Uint8Array(byteNumbers);
-                    blob = new Blob([byteArray], {type: "image/webp"});
-                    fileExtension = 'webp';
-                } else {
-                    ElMessage.error("无效的Base64字符串格式");
+            if (base64Index !== -1) {
+                const pureBase64Data = base64Data.substring(base64Index + base64Prefix.length);
+                const byteCharacters = atob(pureBase64Data);
+                const byteNumbers = new Array(byteCharacters.length);
+                for (let i = 0; i < byteCharacters.length; i++) {
+                    byteNumbers[i] = byteCharacters.charCodeAt(i);
                 }
-            } catch (error) {
-                ElMessage.error("图片解码错误: " + error.message);
-                return;
+                const byteArray = new Uint8Array(byteNumbers);
+                blob = new Blob([byteArray], {type: "image/webp"});
+                fileExtension = 'webp';
+            } else {
+                ElMessage.error("无效的Base64字符串格式");
             }
-        } else {
-            formattedWorkFileContent = JSON.stringify(JSON.parse(await adaptMower(workFileDetail.fileContent)));
-            blob = new Blob([formattedWorkFileContent], {type: "application/json"});
+        } catch (error) {
+            ElMessage.error("图片解码错误: " + error.message);
+            return;
         }
     } else {
+        if (workFileDetail.type === 'Mower') {
+            workFileDetail.fileContent = await adaptMower(workFileDetail.fileContent)
+        }
         formattedWorkFileContent = JSON.stringify(JSON.parse(workFileDetail.fileContent));
         blob = new Blob([formattedWorkFileContent], {type: "application/json"});
     }

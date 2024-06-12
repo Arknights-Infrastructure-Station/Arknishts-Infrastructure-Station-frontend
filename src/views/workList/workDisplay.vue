@@ -180,7 +180,7 @@ onMounted(async () => {
   <el-pagination
       v-model:current-page="workFileScreenData.currentPage"
       v-model:page-size="workFileScreenData.pageSize"
-      :page-sizes="[10, 20, 40, 80]"
+      :page-sizes="[10, 30, 50, 100]"
       :total="data.workFileListCount"
       background
 
@@ -204,7 +204,7 @@ onMounted(async () => {
           name:workFileDetail.name,
           type:workFileDetail.type,
           storageType:workFileDetail.storageType,
-          fileContent:webp.get(workFileDetail.id).fileContent,
+          fileContent:workFileDetail.storageType==='pictureKey'?webp.get(workFileDetail.id).fileContent:workFileDetail.fileContent,
           })"
       >
         下载作业

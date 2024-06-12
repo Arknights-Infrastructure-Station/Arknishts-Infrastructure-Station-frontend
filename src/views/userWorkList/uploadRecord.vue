@@ -116,7 +116,7 @@ onMounted(async () => {
       <el-pagination
           v-model:current-page="postedWorkFileSimpleSearch.currentPage"
           v-model:page-size="postedWorkFileSimpleSearch.pageSize"
-          :page-sizes="[10, 20, 40, 80]"
+          :page-sizes="[10, 30, 50, 100]"
           :total="data.postedWorkFileListCount"
           background
 

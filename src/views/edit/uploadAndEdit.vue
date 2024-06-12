@@ -64,7 +64,7 @@ const fileName = ref('') //获取到的文件名
 
 //动态调整允许上传的作业文件类型
 const approvalUploadType = computed(() => {
-  if (workFile.type === 'Mower') {
+  if (workFile.type !== 'MAA') {
     return '.json,.jpeg,.jpg,.png,.webp'
   } else {
     return '.json'
@@ -74,7 +74,7 @@ const approvalUploadType = computed(() => {
 const approvalPictureType = ['image/png', 'image/jpeg', 'image/jpg', 'image/webp']
 
 const validateWorkFileType = async (file) => {
-  if (workFile.type === 'Mower') {
+  if (workFile.type !== 'MAA') {
     const isJson = await isJsonFile(file, workFile.type);
     return isJson || approvalPictureType.includes(file.type);
   } else {
@@ -126,7 +126,7 @@ const handleWorkFileUploadChange = async (event) => {
     if (isValid) {
       await handleWorkFileUpload(file);
     } else {
-      ElMessage.error(workFile.type === 'Mower' ? '上传的文件必须为JSON、PNG、JPEG、JPG或WEBP格式' : '上传的文件必须符合JSON格式');
+      ElMessage.error(workFile.type !== 'MAA' ? '上传的文件必须为JSON、PNG、JPEG、JPG或WEBP格式' : '上传的文件必须符合JSON格式');
     }
   }
 };
@@ -608,7 +608,7 @@ onUnmounted(() => {
         <input id="workFile-upload" :accept="approvalUploadType" style="display: none;" type="file">
         <el-tooltip
             class="box-item"
-            content="若您想上传图片格式的作业文件，请先选中作业类型项的“Mower”"
+            content="若您想上传图片格式的作业文件，请先选中作业类型项中的非“MAA”选项"
             effect="light"
             placement="right"
         >

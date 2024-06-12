@@ -8,13 +8,13 @@ let email
 
 async function sendVerificationCode() {
     try {
-        await axios.get('/lrf/sendEmailVerificationCode', {
+        await axios.get('/api/lrf/sendEmailVerificationCode', {
             params:{
                 email: email,
             }
         });
     } catch (error) {
-        ElMessage.error(`发送验证码失败: ${error.response?.data?.operateResult?.message || error.message}`);
+        ElMessage.error(`发送验证码失败: ${error.response?.data?.message || error.response?.data?.operateResult?.message || error.message}`);
     }
 }
 

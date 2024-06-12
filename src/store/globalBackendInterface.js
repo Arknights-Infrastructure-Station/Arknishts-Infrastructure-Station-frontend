@@ -1,13 +1,7 @@
 import {defineStore} from 'pinia'
 
-const environmentVariable = import.meta.env.ARKNIGHTS_RUNTIME_ENVIRONMENT;
 export const useBackendInterface = defineStore('globalBackendInterface', {
     state: () => ({
-        backendInterfaceStartWith: ()=>{
-            switch (environmentVariable){
-                case 'production': return 'https://backend.arknightsinfrastructurestation.cn'
-                case 'development': return 'http://localhost:8080'
-            }
-        }
-    }),
-})
+        backendInterfaceStartWith: 'http://localhost:8080' //生产环境的实际后端接口由Nginx做转发
+    })
+});

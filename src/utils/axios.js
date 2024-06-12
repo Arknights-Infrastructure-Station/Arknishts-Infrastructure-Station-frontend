@@ -10,7 +10,8 @@ const axiosInstance = axios.create({
 
 // 请求拦截器，直接存储带有Bearer前缀的token
 axiosInstance.interceptors.request.use(config => {
-    config.baseURL = useBackendInterface().backendInterfaceStartWith;
+    const backendInterface = useBackendInterface()
+    config.baseURL = backendInterface.backendInterfaceStartWith;
 
     const token = localStorage.getItem('ais_token');
     if (token) {

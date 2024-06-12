@@ -163,7 +163,7 @@ onBeforeUnmount(async () => {
   //批量调用取消收藏的方法
   if (unstarWorkFileWids.length > 0) {
     try {
-      const response = await axios.post('/starRecord/unstarMultipleWorkFiles', unstarWorkFileWids);
+      const response = await axios.post('/api/starRecord/unstarMultipleWorkFiles', unstarWorkFileWids);
       tipMessage(response);
     } catch (error) {
       ElMessage.error(`批量取消收藏失败: ${error.message}`);

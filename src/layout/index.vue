@@ -27,7 +27,7 @@ const logout = () => {
       .then(async () => {
         let response
         try {
-          response = await axios.post('/user/logout');
+          response = await axios.post('/api/user/logout');
           localStorage.clear() //注销登录会清除所有缓存
           ElMessage.success(response.data)
         } catch (error) {

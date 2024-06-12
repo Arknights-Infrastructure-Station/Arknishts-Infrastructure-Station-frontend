@@ -107,7 +107,7 @@ async function submitForm() {
   }
 
   try {
-    const response = await axios.post('/lrf/register', {
+    const response = await axios.post('/api/lrf/register', {
       email: registerData.email,
       password: registerData.password,
       verificationCode: registerData.verificationCode
@@ -119,7 +119,7 @@ async function submitForm() {
       }, 2000)
 
   } catch (error) {
-    ElMessage.error(`注册用户失败: ${error.response?.data?.operateResult?.message || error.message}`);
+    ElMessage.error(`注册用户失败: ${error.response?.data?.message || error.response?.data?.operateResult?.message || error.message}`);
   }
 }
 

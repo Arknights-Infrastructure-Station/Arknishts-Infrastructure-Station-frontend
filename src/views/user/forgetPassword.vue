@@ -107,7 +107,7 @@ async function submitForm() {
   }
 
   try {
-    const response = await axios.post('/lrf/forgetPassword', {
+    const response = await axios.post('/api/lrf/forgetPassword', {
       email: forgetPasswordData.email,
       password: forgetPasswordData.password,
       verificationCode: forgetPasswordData.verificationCode
@@ -117,7 +117,7 @@ async function submitForm() {
       router.push({name: 'login'})
     })
   } catch (error) {
-    ElMessage.error(`密码重置失败: ${error.response?.data?.operateResult?.message || error.message}`);
+    ElMessage.error(`密码重置失败: ${error.response?.data?.message || error.response?.data?.operateResult?.message || error.message}`);
   }
 }
 

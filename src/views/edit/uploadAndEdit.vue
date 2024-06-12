@@ -330,7 +330,7 @@ async function addToStagingWorkFile() {
   }
 
   // 如果处于编辑作业状态，则暂存按钮调用保存接口，如果不是（出了其它编辑状态再说），则调用创建暂存作业接口
-  const endpoint = createOrEditWorkFileData.state === editState.stagingWorkFileEdit ? '/stagingWorkFile/update' : '/stagingWorkFile/create'
+  const endpoint = createOrEditWorkFileData.state === editState.stagingWorkFileEdit ? '/api/stagingWorkFile/update' : '/api/stagingWorkFile/create'
 
   try {
     const response = await axios.post(endpoint, stagingWorkFile);
@@ -386,7 +386,7 @@ async function submitWorkFile() {
       workFileData.id = workFile.id;
     }
 
-    const endpoint = createOrEditWorkFileData.state === editState.workFileEdit ? '/workFile/update' : '/workFile/create';
+    const endpoint = createOrEditWorkFileData.state === editState.workFileEdit ? '/api/workFile/update' : '/api/workFile/create';
     const response = await axios.post(endpoint, workFileData);
 
     tipMessage(response);

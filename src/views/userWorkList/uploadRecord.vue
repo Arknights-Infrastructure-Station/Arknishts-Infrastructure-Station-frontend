@@ -78,10 +78,10 @@ async function changeActivityBar(name) {
 const addWorkFileToRecycling = async (id) => {
   simpleSearch.wid = id
   try {
-    const response = await axios.post('/recyclingWorkFile/addToRecycling', simpleSearch);
+    const response = await axios.post('/api/recyclingWorkFile/addToRecycling', simpleSearch);
     tipMessage(response)
   } catch (error) {
-    ElMessage.error(`将作业加入回收箱失败: ${error.response?.data?.operateResult?.message || error.message}`);
+    ElMessage.error(`将作业加入回收箱失败: ${error.response?.data?.message || error.response?.data?.operateResult?.message || error.message}`);
   }
 }
 const showFileContent = ref(false) //是否显示作业文件内容

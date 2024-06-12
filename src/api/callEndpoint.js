@@ -10,10 +10,10 @@ import {adaptMower} from "@/utils/adapter.js";
  */
 export async function screenPostedWorkFileList(workFileSimpleSearch) {
     try {
-        const response = await axios.post('/workFile/screenPostedWorkFileList', workFileSimpleSearch);
+        const response = await axios.post('/api/workFile/screenPostedWorkFileList', workFileSimpleSearch);
         tipErrorMessage(response)
     } catch (error) {
-        ElMessage.error(`获取已发布作业列表失败: ${error.response?.data?.operateResult?.message || error.message}`);
+        ElMessage.error(`获取已发布作业列表失败: ${error.response?.data?.message || error.response?.data?.operateResult?.message || error.message}`);
     }
 }
 
@@ -24,10 +24,10 @@ export async function screenPostedWorkFileList(workFileSimpleSearch) {
  */
 export async function screenStagingWorkFileList(workFileSimpleSearch) {
     try {
-        const response = await axios.post('/stagingWorkFile/screenStagingWorkFileList', workFileSimpleSearch);
+        const response = await axios.post('/api/stagingWorkFile/screenStagingWorkFileList', workFileSimpleSearch);
         tipErrorMessage(response)
     } catch (error) {
-        ElMessage.error(`获取暂存作业列表失败: ${error.response?.data?.operateResult?.message || error.message}`);
+        ElMessage.error(`获取暂存作业列表失败: ${error.response?.data?.message || error.response?.data?.operateResult?.message || error.message}`);
     }
 }
 
@@ -38,10 +38,10 @@ export async function screenStagingWorkFileList(workFileSimpleSearch) {
  */
 export async function screenRecyclingWorkFileList(workFileSimpleSearch) {
     try {
-        const response = await axios.post('/recyclingWorkFile/screenRecyclingWorkFileList', workFileSimpleSearch);
+        const response = await axios.post('/api/recyclingWorkFile/screenRecyclingWorkFileList', workFileSimpleSearch);
         tipErrorMessage(response)
     } catch (error) {
-        ElMessage.error(`获取待回收作业列表失败: ${error.response?.data?.operateResult?.message || error.message}`);
+        ElMessage.error(`获取待回收作业列表失败: ${error.response?.data?.message || error.response?.data?.operateResult?.message || error.message}`);
     }
 }
 
@@ -52,10 +52,10 @@ export async function screenRecyclingWorkFileList(workFileSimpleSearch) {
  */
 export async function screenStaredWorkFileList(workFileSimpleSearch) {
     try {
-        const response = await axios.post('/starRecord/screenStaredWorkFileList', workFileSimpleSearch);
+        const response = await axios.post('/api/starRecord/screenStaredWorkFileList', workFileSimpleSearch);
         tipErrorMessage(response)
     } catch (error) {
-        ElMessage.error(`获取用户收藏列表失败: ${error.response?.data?.operateResult?.message || error.message}`);
+        ElMessage.error(`获取用户收藏列表失败: ${error.response?.data?.message || error.response?.data?.operateResult?.message || error.message}`);
     }
 }
 
@@ -65,14 +65,14 @@ export async function screenStaredWorkFileList(workFileSimpleSearch) {
  */
 export async function getStarListForUser(hasTip = true) {
     try {
-        const response = await axios.get('/starRecord/getStarListForUser');
+        const response = await axios.get('/api/starRecord/getStarListForUser');
         if (hasTip) {
             tipErrorMessage(response)
         }
     } catch (error) {
         if (hasTip) {
             // 当前后端处理走的是这一条报错路线
-            ElMessage.error(`获取用户收藏列表失败: ${error.response?.data?.operateResult?.message || error.message}`);
+            ElMessage.error(`获取用户收藏列表失败: ${error.response?.data?.message || error.response?.data?.operateResult?.message || error.message}`);
         }
     }
 }
@@ -84,10 +84,10 @@ export async function getStarListForUser(hasTip = true) {
  */
 export async function starWorkFile(id) {
     try {
-        const response = await axios.post('/starRecord/starWorkFile', {wid: id});
+        const response = await axios.post('/api/starRecord/starWorkFile', {wid: id});
         tipMessage(response)
     } catch (error) {
-        ElMessage.error(`收藏作业失败: ${error.response?.data?.operateResult?.message || error.message}`);
+        ElMessage.error(`收藏作业失败: ${error.response?.data?.message || error.response?.data?.operateResult?.message || error.message}`);
     }
 }
 
@@ -98,10 +98,10 @@ export async function starWorkFile(id) {
  */
 export async function unstarWorkFile(id) {
     try {
-        const response = await axios.post('/starRecord/unstarWorkFile', {wid: id});
+        const response = await axios.post('/api/starRecord/unstarWorkFile', {wid: id});
         tipMessage(response)
     } catch (error) {
-        ElMessage.error(`取消收藏作业失败: ${error.response?.data?.operateResult?.message || error.message}`);
+        ElMessage.error(`取消收藏作业失败: ${error.response?.data?.message || error.response?.data?.operateResult?.message || error.message}`);
     }
 }
 
@@ -113,7 +113,7 @@ export async function unstarWorkFile(id) {
  */
 export async function getWebPByKey(key) {
     try {
-        const response = await axios.get(`/api/webp/${key}`);
+        const response = await axios.get('/api/webp/${key}');
         return response.data;
     } catch (error) {
         ElMessage.error(`webp文件url获取失败: ${error}`);
@@ -128,10 +128,10 @@ export async function getWebPByKey(key) {
  */
 export async function screenWorkFileList(workFileScreen) {
     try {
-        const response = await axios.post(`/workFile/screenWorkFileList`, workFileScreen);
+        const response = await axios.post('/api/workFile/screenWorkFileList', workFileScreen);
         tipErrorMessage(response)
     } catch (error) {
-        ElMessage.error(`筛选作业失败: ${error.response?.data?.operateResult?.message || error.message}`);
+        ElMessage.error(`筛选作业失败: ${error.response?.data?.message || error.response?.data?.operateResult?.message || error.message}`);
     }
 }
 
@@ -143,10 +143,10 @@ export async function screenWorkFileList(workFileScreen) {
  */
 export async function rate(userRate) {
     try {
-        const response = await axios.post(`/score/rate`, userRate);
+        const response = await axios.post('/api/score/rate', userRate);
         tipMessage(response)
     } catch (error) {
-        ElMessage.error(`作业评分失败: ${error.response?.data?.operateResult?.message || error.message}`);
+        ElMessage.error(`作业评分失败: ${error.response?.data?.message || error.response?.data?.operateResult?.message || error.message}`);
     }
 }
 
@@ -158,10 +158,10 @@ export async function rate(userRate) {
  */
 export async function getRateRecordsForUser() {
     try {
-        const response = await axios.get(`/score/getRateRecordsForUser`);
+        const response = await axios.get('/api/score/getRateRecordsForUser');
         tipErrorMessage(response)
     } catch (error) {
-        ElMessage.error(`筛选作业失败: ${error.response?.data?.operateResult?.message || error.message}`);
+        ElMessage.error(`筛选作业失败: ${error.response?.data?.message || error.response?.data?.operateResult?.message || error.message}`);
     }
 }
 
@@ -202,7 +202,7 @@ export async function downloadWorkFile(workFileDetail) {
     }
 
     try {
-        await axios.post('/download/increaseDownloadCount', {
+        await axios.post('/api/download/increaseDownloadCount', {
             wid: workFileDetail.id
         });
     } catch (error) {

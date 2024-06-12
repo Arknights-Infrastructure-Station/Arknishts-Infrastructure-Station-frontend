@@ -40,28 +40,28 @@ const confirmAvatar = async () => {
 const updateAvatarOrUsername = async () => {
   if (chooseAvatar.value !== '') {
     try {
-      const response = await axios.put('/user/updateAvatar', chooseAvatar.value, {
+      const response = await axios.put('/api/user/updateAvatar', chooseAvatar.value, {
         headers: {
           'Content-Type': 'text/plain'
         }
       });
       tipMessage(response)
     } catch (error) {
-      ElMessage.error(`头像更新失败: ${error.response?.data?.operateResult?.message || error.message}`);
+      ElMessage.error(`头像更新失败: ${error.response?.data?.message || error.response?.data?.operateResult?.message || error.message}`);
     } finally {
       chooseAvatar.value = ''
     }
   }
   if (newUsername.value !== '') {
     try {
-      const response = await axios.put('/user/updateUsername', newUsername.value, {
+      const response = await axios.put('/api/user/updateUsername', newUsername.value, {
         headers: {
           'Content-Type': 'text/plain'
         }
       });
       tipMessage(response)
     } catch (error) {
-      ElMessage.error(`用户名更新失败: ${error.response?.data?.operateResult?.message || error.message}`);
+      ElMessage.error(`用户名更新失败: ${error.response?.data?.message || error.response?.data?.operateResult?.message || error.message}`);
     } finally {
       newUsername.value = ''
     }
@@ -75,7 +75,7 @@ const newPassword = ref('')
 // 更新密码的方法
 const updatePassword = async () => {
   try {
-    const response = await axios.post('/user/updatePassword', {
+    const response = await axios.post('/api/user/updatePassword', {
       oldPassword: oldPassword.value,
       newPassword: newPassword.value
     });
@@ -85,7 +85,7 @@ const updatePassword = async () => {
     oldPassword.value = '';
     newPassword.value = '';
   } catch (error) {
-    ElMessage.error(`密码更新失败: ${error.response?.data?.operateResult?.message || error.message}`);
+    ElMessage.error(`密码更新失败: ${error.response?.data?.message || error.response?.data?.operateResult?.message || error.message}`);
   }
 };
 
@@ -99,13 +99,13 @@ watch(() => verificationCode.value, () => {
 // 更新邮箱的方法
 const updateEmail = async () => {
   try {
-    const response = await axios.put('/user/updateEmail', {
+    const response = await axios.put('/api/user/updateEmail', {
       newEmail: newEmail.value,
       verificationCode: verificationCode.value
     });
     tipMessage(response)
   } catch (error) {
-    ElMessage.error(`更新邮箱失败: ${error.response?.data?.operateResult?.message || error.message}`);
+    ElMessage.error(`更新邮箱失败: ${error.response?.data?.message || error.response?.data?.operateResult?.message || error.message}`);
   }
 };
 
@@ -130,26 +130,26 @@ watch(() => data.userInfo.infrastructure, (newValue) => {
 // 保存operators的方法
 const saveOperators = async () => {
   try {
-    const response = await axios.put('/user/updateOperators', data.userInfo.operators);
+    const response = await axios.put('/api/user/updateOperators', data.userInfo.operators);
     // 更新备份
     operatorsBak.value = cloneDeep(data.userInfo.operators);
 
     tipMessage(response)
   } catch (error) {
-    ElMessage.error(`保存操作失败: ${error.response?.data?.operateResult?.message || error.message}`);
+    ElMessage.error(`保存操作失败: ${error.response?.data?.message || error.response?.data?.operateResult?.message || error.message}`);
   }
 };
 
 // 保存infrastructure的方法，同setInfrastructure组件
 const saveInfrastructure = async () => {
   try {
-    const response = await axios.put('/user/updateInfrastructure', data.userInfo.infrastructure);
+    const response = await axios.put('/api/user/updateInfrastructure', data.userInfo.infrastructure);
     // 更新备份
     infrastructureBak.value = cloneDeep(data.userInfo.infrastructure);
 
     tipMessage(response)
   } catch (error) {
-    ElMessage.error(`保存操作失败: ${error.response?.data?.operateResult?.message || error.message}`);
+    ElMessage.error(`保存操作失败: ${error.response?.data?.message || error.response?.data?.operateResult?.message || error.message}`);
   }
 };
 

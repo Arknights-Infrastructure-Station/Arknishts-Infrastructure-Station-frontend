@@ -93,7 +93,7 @@ async function submitForm() {
   }
 
   try {
-    const response = await axios.post('/lrf/login', {
+    const response = await axios.post('/api/lrf/login', {
       email: loginData.email,
       password: loginData.password,
       verificationCode: loginData.verificationCode

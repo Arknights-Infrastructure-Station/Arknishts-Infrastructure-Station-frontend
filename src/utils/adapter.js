@@ -6,7 +6,7 @@ import {getUserInfrastructureForMower} from "@/utils/infrastructure.js";
 async function adaptMower(source) {
     let userInfrastructure = getUserInfrastructureForMower()
     try {
-        const response = await axios.post('/adapter/getAdaptedMower', {
+        const response = await axios.post('/api/adapter/getAdaptedMower', {
             source: source,
             require: userInfrastructure
         })

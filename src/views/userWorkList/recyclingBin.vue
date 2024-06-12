@@ -77,10 +77,10 @@ const deleteGoal = ref(null)
 const recoverRecyclingWorkFile = async (id) => {
   simpleSearch.wid = id
   try {
-    const response = await axios.post('/recyclingWorkFile/recoverFromRecycling', simpleSearch);
+    const response = await axios.post('/api/recyclingWorkFile/recoverFromRecycling', simpleSearch);
     tipMessage(response)
   } catch (error) {
-    ElMessage.error(`恢复待回收作业失败: ${error.response?.data?.operateResult?.message || error.message}`);
+    ElMessage.error(`恢复待回收作业失败: ${error.response?.data?.message || error.response?.data?.operateResult?.message || error.message}`);
   } finally {
     openDeleteConfirmDialog.value = false;
     deleteGoal.value = null;
@@ -100,10 +100,10 @@ const cancelDelete = () => {
 const confirmDelete = async () => {
   simpleSearch.wid = deleteGoal.value.id
   try {
-    const response = await axios.post('/recyclingWorkFile/deleteRecyclingWorkFile', simpleSearch);
+    const response = await axios.post('/api/recyclingWorkFile/deleteRecyclingWorkFile', simpleSearch);
     tipMessage(response)
   } catch (error) {
-    ElMessage.error(`删除待回收作业失败: ${error.response?.data?.operateResult?.message || error.message}`);
+    ElMessage.error(`删除待回收作业失败: ${error.response?.data?.message || error.response?.data?.operateResult?.message || error.message}`);
   } finally {
     openDeleteConfirmDialog.value = false;
     deleteGoal.value = null;

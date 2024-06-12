@@ -89,10 +89,10 @@ const cancelDelete = () => {
 const confirmDelete = async () => {
   simpleSearch.wid = deleteGoal.value.id
   try {
-    const response = await axios.post('/stagingWorkFile/delete', simpleSearch);
+    const response = await axios.post('/api/stagingWorkFile/delete', simpleSearch);
     tipMessage(response)
   } catch (error) {
-    ElMessage.error(`删除暂存作业失败: ${error.response?.data?.operateResult?.message || error.message}`);
+    ElMessage.error(`删除暂存作业失败: ${error.response?.data?.message || error.response?.data?.operateResult?.message || error.message}`);
   } finally {
     openDeleteConfirmDialog.value = false;
     deleteGoal.value = null;

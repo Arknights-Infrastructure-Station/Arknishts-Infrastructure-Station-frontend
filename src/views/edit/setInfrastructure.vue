@@ -33,10 +33,10 @@ function reset() {
 //
 async function saveInfrastructure() {
   try {
-    const response = await axios.put('/user/updateInfrastructure', tableData.value);
+    const response = await axios.put('/api/user/updateInfrastructure', tableData.value);
     tipMessage(response)
   } catch (error) {
-    ElMessage.error(`保存操作失败: ${error.response?.data?.operateResult?.message || error.message}`);
+    ElMessage.error(`保存操作失败: ${error.response?.data?.message || error.response?.data?.operateResult?.message || error.message}`);
   }
 }
 

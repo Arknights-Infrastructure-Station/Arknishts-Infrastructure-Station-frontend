@@ -29,11 +29,11 @@ const saveCustomOperatorLevels = async () => {
     customOperatorsData.forEach(operator => delete operator.profession);
 
     // Make a PUT request to the backend with JSON string
-    const response = await axios.put('/user/updateOperators', customOperatorsData);
+    const response = await axios.put('/api/user/updateOperators', customOperatorsData);
 
     tipMessage(response)
   } catch (error) {
-    ElMessage.error(`保存自定义干员练度失败: ${error.response?.data?.operateResult?.message || error.message}`);
+    ElMessage.error(`保存自定义干员练度失败: ${error.response?.data?.message || error.response?.data?.operateResult?.message || error.message}`);
   }
 };
 

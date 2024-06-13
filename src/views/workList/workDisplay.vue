@@ -249,7 +249,7 @@ onMounted(async () => {
         />
       </span>
       <span v-else class="drawer-mark-text">暂无评分</span>
-      <rate-group :helpfulState="helpfulState"/>
+      <rate-group v-if="isLogin" :helpfulState="helpfulState"/>
     </div>
     <markdown-preview
         v-if="workFileDetail.description !== ''"

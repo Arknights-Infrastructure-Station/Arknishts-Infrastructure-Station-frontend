@@ -50,9 +50,11 @@ const fieldsNeedConvert = [
 
 // 响应拦截器，将token发往后端的时候，后端会负责去掉Bearer，前端直接发送就行
 axiosInstance.interceptors.response.use(response => {
+    // console.log('响应被拦截')
     const globalData = useData();
-    let token = response.headers['Authorization'];
+    let token = response.headers['authorization']; //虽然后端用的Authorization字段，但是前端需要用authorization来接收
     if (token) {
+        // console.log('正在token本地化存储')
         localStorage.setItem('ais_token', token);
     }
 

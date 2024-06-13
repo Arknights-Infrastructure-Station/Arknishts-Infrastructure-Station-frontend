@@ -113,7 +113,7 @@ export async function unstarWorkFile(id) {
  */
 export async function getWebPByKey(key) {
     try {
-        const response = await axios.get('/api/webp/${key}');
+        const response = await axios.get(`/api/webp/${key}`);
         return response.data;
     } catch (error) {
         ElMessage.error(`webp文件url获取失败: ${error}`);
@@ -161,7 +161,7 @@ export async function getRateRecordsForUser() {
         const response = await axios.get('/api/score/getRateRecordsForUser');
         tipErrorMessage(response)
     } catch (error) {
-        ElMessage.error(`筛选作业失败: ${error.response?.data?.message || error.response?.data?.operateResult?.message || error.message}`);
+        ElMessage.error(`筛选评分记录失败: ${error.response?.data?.message || error.response?.data?.operateResult?.message || error.message}`);
     }
 }
 

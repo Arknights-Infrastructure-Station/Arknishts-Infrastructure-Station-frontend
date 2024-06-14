@@ -15,10 +15,11 @@ let ready = createOrEditWorkFileData.transferWorkFile.description === '';
 
 const vditorData = defineModel()
 
+let interval;
 const stopWatcher = watch(() => vditorData.value, () => {
   // console.log('试图载入');
 
-  const interval = setInterval(() => {
+  interval = setInterval(() => {
     if (ready) {
       // console.log('载入完成');
       vditor.setValue(vditorData.value);
@@ -87,7 +88,7 @@ const initVditor = () => {
       type: 'markdown'
     },
     input: updateDescriptionData,
-    value: vditorData.value
+    value: vditorData.value,
   };
   vditor = new Vditor('vditor', options);
   nextTick(() => {
@@ -97,6 +98,14 @@ const initVditor = () => {
 };
 
 function updateDescriptionData() {
+
+  //当用户更新作业描述时，意味着已无需再尝试初始化
+  if (ready) {
+    ready = false
+    clearInterval(interval);
+    stopWatcher();
+  }
+
   vditorData.value = vditor.getValue()
   // console.log('vditorData:' + vditorData.value)
 }

@@ -1,4 +1,4 @@
-export {isJsonFile, isNumeric}
+export {isJsonFile, isNumeric,isValidEmail}
 
 /**
  * 检查文件是否是JSON文件
@@ -21,3 +21,14 @@ function isNumeric(str) {
     return !isNaN(str) && !isNaN(parseFloat(str)); // 检查是否为数字
 }
 
+/**
+ * 检查邮箱格式是否正确
+ * @param email 要检查的邮箱
+ * @returns {boolean} 是否正确
+ */
+function isValidEmail(email) {
+    // 定义邮箱格式的正则表达式
+    const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    // 使用正则表达式测试字符串是否符合邮箱格式
+    return emailPattern.test(email);
+}

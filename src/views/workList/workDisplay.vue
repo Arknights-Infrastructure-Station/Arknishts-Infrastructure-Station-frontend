@@ -144,10 +144,12 @@ const eliteSort = (requestElite) => {
 onMounted(async () => {
   isLogin.value = localStorage.getItem('ais_token') !== null //检测用户是否已登录
 
-  //获取该用户的作业收藏列表
-  await getStarListForUser(false)
-  //获取该用户的赞踩记录
-  await getRateRecordsForUser()
+  if (isLogin.value){
+    //获取该用户的作业收藏列表
+    await getStarListForUser(false)
+    //获取该用户的赞踩记录
+    await getRateRecordsForUser()
+  }
 })
 </script>
 

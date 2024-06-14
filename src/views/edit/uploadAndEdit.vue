@@ -24,7 +24,7 @@ const workFile = reactive({
   type: '', //作业类型
   layout: '', //作业采用的基建布局
   description: '', //作业描述
-  descriptionPictures: [], //作业描述图片
+  descriptionPictures: null, //作业描述图片
   storageType: '', //作业内容存储类型
   fileContent: '', //作业文件数据
   enableRequestElite: false, //是否启用干员精英化要求
@@ -138,6 +138,11 @@ const handleWorkFileUpload = async (file) => {
   if (fileType === 'application/json') {
     workFile.fileContent = await file.text();
     workFile.storageType = 'text';
+
+    //自动识别
+    detectOperators(workFile.fileContent);
+    if (workFile.type)
+      detectInfrastructures(workFile.fileContent)
   } else if (fileType !== 'image/webp') {
     const isValid = await isValidImage(file);
     if (!isValid) {
@@ -207,6 +212,8 @@ const handleDescriptionPicturesUploadChange = async (event) => {
         success(result) {
           const reader = new FileReader();
           reader.onload = () => {
+            if (!workFile.descriptionPictures)
+              workFile.descriptionPictures = []
             // 将新的图片追加到数组末尾
             workFile.descriptionPictures.push(reader.result);
             // 移除最早添加的图片
@@ -236,6 +243,8 @@ onMounted(() => {
 //图片移除
 const removePicture = (index) => {
   workFile.descriptionPictures.splice(index, 1);
+  if (workFile.descriptionPictures.length === 0)
+    workFile.descriptionPictures = null
 };
 
 //图片预览拖拽
@@ -373,7 +382,7 @@ async function submitWorkFile() {
       type: workFile.type,
       layout: workFile.layout,
       description: workFile.description,
-      descriptionPictures: JSON.stringify(cloneDeep(workFile.descriptionPictures)),
+      descriptionPictures: JSON.stringify(cloneDeep(workFile.descriptionPictures)), //后端会自动处理"null"结果
       storageType: workFile.storageType,
       fileContent: workFile.fileContent,
       fileRequest: JSON.stringify({
@@ -497,6 +506,121 @@ onUnmounted(() => {
   //重置useCreateOrEditWorkFileData状态
   createOrEditWorkFileData.resetState()
 })
+
+/**
+ * 检查JSON格式的作业文件内容，将所有发现的干员导入干员精英化要求数组中
+ * @param jsonContent JSON格式的作业文件内容
+ */
+function detectOperators(jsonContent) {
+  const fileContentJson = JSON.parse(jsonContent);
+  const fieldValues = [];
+
+  function collectValues(obj) {
+    for (const key in obj) {
+      const value = obj[key];
+      if (typeof value === 'object' && value !== null) {
+        collectValues(value);
+      } else if (Array.isArray(value)) {
+        value.forEach(item => {
+          if (typeof item === 'object' && item !== null) {
+            collectValues(item);
+          } else {
+            fieldValues.push(item);
+          }
+        });
+      } else {
+        fieldValues.push(value);
+      }
+    }
+  }
+
+  collectValues(fileContentJson);
+
+  const detectedOperators = operatorList.value.filter(operator =>
+      fieldValues.includes(operator.value)
+  );
+
+  detectedOperators.forEach(operator => {
+    if (operator.rarity >= 4) {
+      operator.elite = 2;
+    } else if (operator.rarity === 3) {
+      operator.elite = 1;
+    }
+  });
+
+  if (workFile.fileRequest.requestElite.length > 0) {
+    workFile.fileRequest.requestElite.length = 0
+    ElMessage({
+      showClose: true,
+      message: '已替换原有的干员精英化要求列表',
+      type: 'info',
+      duration: 6000
+    })
+  }
+  detectedOperators.forEach(operator => {
+    workFile.fileRequest.requestElite.push({...operator});
+  });
+
+  ElMessage({
+    showClose: true,
+    message: '已将从作业中识别到的干员导入到干员精英化要求中，请视情况是否启用',
+    type: 'success',
+    duration: 6000
+  })
+}
+
+function detectInfrastructures(jsonContent) {
+  const fileContentJson = JSON.parse(jsonContent);
+  const detectedInfrastructures = [];
+
+  if (workFile.type === 'MAA') {
+    const roomKeys = ['trading', 'manufacture', 'power'];
+    let found;
+    roomKeys.forEach(key => {
+      let count = 0;
+      found = false //只找首个对应key，初始为未找到
+      fileContentJson.plans.forEach(plan => {
+        if (plan.rooms[key] && !found) { //没找到才增加数量
+          plan.rooms[key].forEach(room => {
+            if (room.operators) {
+              count++;
+            }
+          });
+          found = true
+        }
+      });
+      for (let i = 0; i < count; i++) {
+        detectedInfrastructures.push(key);
+      }
+    });
+  } else if (workFile.type === 'Mower') {
+    const roomNames = {
+      '贸易站': 'trading',
+      '制造站': 'manufacture',
+      '发电站': 'power'
+    };
+    Object.keys(roomNames).forEach(roomName => {
+      Object.keys(fileContentJson.plan1).forEach(key => {
+        if (fileContentJson.plan1[key].name === roomName) {
+          detectedInfrastructures.push(roomNames[roomName]);
+        }
+      });
+    });
+  }
+
+  detectedInfrastructures.forEach((infra, index) => {
+    if (workFile.fileRequest.requestInfrastructure[5 + index]) {
+      workFile.fileRequest.requestInfrastructure[5 + index].name = infra;
+    }
+  });
+
+  ElMessage({
+    showClose: true,
+    message: '已将从作业中识别到的基建设施导入到基建布局等级要求中，请视情况是否启用',
+    type: 'success',
+    duration: 6000
+  })
+}
 </script>
 
 <template>
@@ -718,13 +842,19 @@ onUnmounted(() => {
 
           <transition name="float-io">
             <el-form-item v-if="workFile.enableRequestInfrastructure" label="基建布局等级要求">
-              <el-text style="
+              <el-tooltip
+                  content="对于MAA作业，无须在意具体设施的位置，仅需要在意对应设施的数量即可"
+                  effect="light"
+                  placement="bottom"
+              >
+                <el-text style="
               color: #b3b2b6;
               margin-left: 10px;
               position: absolute;
               top: 0;
               " tag="i">*拖拽设施以交换它们的位置
-              </el-text>
+                </el-text>
+              </el-tooltip>
               <InfrastructureTable v-model="workFile.fileRequest.requestInfrastructure" draggable/>
             </el-form-item>
           </transition>

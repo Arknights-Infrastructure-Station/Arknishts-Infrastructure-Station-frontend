@@ -46,10 +46,11 @@ function parseJSONSafely(value) {
 
 /*
 不解析fileContent，让作业文件内容保持为字符串类型
+不解析description，以防将纯数字格式的描述解析成数字
 不解析layout，避免解析为数字类型
 不解析id、wid、uid，避免因为过长而导致精度损失
 */
-const excludeParse = ['fileContent', 'layout', 'id', 'wid', 'uid', 'authorId']
+const excludeParse = ['fileContent', 'description', 'layout', 'id', 'wid', 'uid', 'authorId']
 
 function deepParseJSON(obj) {
     if (typeof obj === 'string') {

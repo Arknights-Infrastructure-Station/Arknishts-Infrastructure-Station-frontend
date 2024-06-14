@@ -2,14 +2,14 @@
 import {handleSendCode} from "@/utils/sendCodeCooldown.js";
 import axios from "@/utils/axios.js"
 import {ElMessage} from "element-plus";
-import {tipMessage} from "@/utils/messageHanding.js";
+import {isValidEmail} from "@/utils/check.js";
 
 let email
 
 async function sendVerificationCode() {
     try {
         await axios.get('/api/lrf/sendEmailVerificationCode', {
-            params:{
+            params: {
                 email: email,
             }
         });
@@ -20,9 +20,12 @@ async function sendVerificationCode() {
 
 async function tryToSendCode(goalEmail) {
     if (goalEmail !== '') {
-        email = goalEmail
-        // console.log(email)
-        handleSendCode(sendVerificationCode)
+        if (isValidEmail(goalEmail)) {
+            email = goalEmail
+            // console.log(email)
+            handleSendCode(sendVerificationCode)
+        } else ElMessage.info('请确保邮箱格式正确')
+
     } else ElMessage.info('请先填写邮箱')
 }
 

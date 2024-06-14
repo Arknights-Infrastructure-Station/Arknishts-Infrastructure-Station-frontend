@@ -303,11 +303,23 @@ function loadAllOperators() {
   for (const key in operatorTable) {
     // 检查每个键对应的对象是否包含name和charId字段
     if (operatorTable[key].name && operatorTable[key].charId) {
+      let eliteLevel = 0; // 默认精英等级
+      const rarity = operatorTable[key].rarity;
+
+      // 根据rarity值设置elite等级
+      if (rarity >= 4) {
+        eliteLevel = 2;
+      } else if (rarity === 3) {
+        eliteLevel = 1;
+      } else {
+        eliteLevel = 0;
+      }
+
       operatorList.value.push({
         value: operatorTable[key].name, // value是固定属性，用于显示在列表推荐中
         charId: operatorTable[key].charId, // charId用于获取干员头像
-        rarity: operatorTable[key].rarity, // rarity用于限制干员可设置的精英化等级
-        elite: 0 // 默认精英等级零
+        rarity: rarity, // rarity用于限制干员可设置的精英化等级
+        elite: eliteLevel // 根据稀有度设置的精英等级
       });
     }
   }
@@ -539,14 +551,6 @@ function detectOperators(jsonContent) {
   const detectedOperators = operatorList.value.filter(operator =>
       fieldValues.includes(operator.value)
   );
-
-  detectedOperators.forEach(operator => {
-    if (operator.rarity >= 4) {
-      operator.elite = 2;
-    } else if (operator.rarity === 3) {
-      operator.elite = 1;
-    }
-  });
 
   if (workFile.fileRequest.requestElite.length > 0) {
     workFile.fileRequest.requestElite.length = 0

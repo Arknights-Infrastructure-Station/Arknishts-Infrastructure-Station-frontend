@@ -179,6 +179,7 @@ onMounted(async () => {
       <el-table-column label="收藏数" prop="starNumber" sortable/>
     </el-table>
   </div>
+  <!--分页限制在workScreen.vue组件-->
   <el-pagination
       v-model:current-page="workFileScreenData.currentPage"
       v-model:page-size="workFileScreenData.pageSize"

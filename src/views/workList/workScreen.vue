@@ -179,6 +179,15 @@ watch(
     {deep: true}
 );
 
+// 监视分页参数，确保后端遍历的记录数在一定范围内，预防深度分页问题
+const recordUpperLimit = 10000 // 定义上限
+watchEffect(() => {
+  if (workFileScreenData.currentPage * workFileScreenData.pageSize > recordUpperLimit) {
+    workFileScreenData.currentPage = Math.floor(recordUpperLimit / workFileScreenData.pageSize)
+    ElMessage.info('已达到页数检索上限，请考虑修改筛选栏参数以更精确地查询您想要的作业文件')
+  }
+})
+
 //监听刷新标记，时刻准备为其它组件刷新数据
 watchEffect(() => {
   if (refreshFlag.workFileListRefreshFlag) {

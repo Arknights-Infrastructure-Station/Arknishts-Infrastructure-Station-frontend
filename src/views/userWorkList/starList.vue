@@ -201,7 +201,7 @@ onBeforeUnmount(async () => {
         >
           <span>
             <!--作业名称-->
-            {{ workFile.name }}
+            <el-text truncated>{{ workFile.name }}</el-text>
           </span>
           <TypeAndLayoutTags
               :layout="workFile.layout"
@@ -252,7 +252,7 @@ onBeforeUnmount(async () => {
             class="none-workFile-header"
         >
           <span>
-            {{ workFile.name }}
+            <el-text truncated>{{ workFile.name }}</el-text>
             <TypeAndLayoutTags
                 :layout="workFile.layout"
                 :type="workFile.type"

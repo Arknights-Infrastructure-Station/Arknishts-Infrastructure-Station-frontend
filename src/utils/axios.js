@@ -2,6 +2,7 @@ import axios from 'axios';
 import {useBackendInterface} from "@/store/globalBackendInterface.js";
 import {getFromLocalStorage, saveToLocalStorage} from "@/utils/commonMethods.js";
 import {useData} from "@/store/globalData.js";
+import {ElMessage} from "element-plus";
 
 // 创建 Axios 实例
 const axiosInstance = axios.create({
@@ -77,6 +78,14 @@ axiosInstance.interceptors.response.use(response => {
 
     return response;
 }, error => {
+    if (error.response && error.response.status === 401) {
+        // 清除本地存储中的 token
+        localStorage.removeItem('ais_token');
+        // 刷新页面
+        window.location.reload();
+        // 提示用户重新登录
+        ElMessage.warning('Token无效，请尝试重新登录');
+    }
     return Promise.reject(error);
 });
 

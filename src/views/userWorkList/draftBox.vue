@@ -164,7 +164,7 @@ onMounted(async () => {
         <template #title>
           <div class="workFile-title">
             <!--作业名称-->
-            {{ workFile.name }}
+            <el-text truncated>{{ workFile.name }}</el-text>
 
             <TypeAndLayoutTags :layout="workFile.layout" :type="workFile.type"/>
 

@@ -246,7 +246,7 @@ onMounted(async () => {
         </div>
 
         <!-- 第六个筛选项 -->
-        <div class="filter-item ws-special">
+        <div class="filter-item ws-special-editor">
           <div class="filter-label"><b>发布日期</b></div>
           <el-date-picker
               v-model="workFileScreenData.dateRange"
@@ -258,7 +258,7 @@ onMounted(async () => {
         </div>
 
         <!-- 第七个筛选项 -->
-        <div class="filter-item ws-special">
+        <div class="filter-item ws-special-input">
           <div class="filter-label"><b>作业查询</b></div>
           <el-input
               v-model="workFileScreenData.workQuery"
@@ -304,7 +304,7 @@ onMounted(async () => {
 }
 </style>
 <style lang="scss">
-.ws-special {
+.ws-special-editor {
   .el-date-editor {
     --el-date-editor-datetimerange-width: 340px !important;
 
@@ -312,6 +312,8 @@ onMounted(async () => {
       margin-right: 12px;
     }
   }
+}
+.ws-special-input {
   .el-input__wrapper{
     width: 18em;
   }

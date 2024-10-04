@@ -208,31 +208,31 @@ onMounted(async () => {
     <el-card class="user-filter" shadow="always">
       <div class="filter-flex">
         <!-- 第一个筛选项 -->
-        <div class="filter-item item1">
+        <div class="filter-item">
           <div class="filter-label"><b>作业类型</b></div>
           <el-segmented v-model="workFileScreenData.type" :options="types" size="default"/>
         </div>
 
         <!-- 第二个筛选项 -->
-        <div class="filter-item item2">
+        <div class="filter-item">
           <div class="filter-label"><b>基建布局</b></div>
           <el-segmented v-model="workFileScreenData.layout" :options="layouts" size="default"/>
         </div>
 
         <!-- 第三个筛选项 -->
-        <div class="filter-item item1">
+        <div class="filter-item">
           <div class="filter-label"><b>排序依据</b></div>
           <el-segmented v-model="workFileScreenData.sortType" :options="sortType" size="default"/>
         </div>
 
         <!-- 第四个筛选项 -->
-        <div class="filter-item item2">
+        <div class="filter-item">
           <div class="filter-label"><b>排序方式</b></div>
           <el-segmented v-model="workFileScreenData.orderType" :options="orderType" size="default"/>
         </div>
 
         <!-- 第五个筛选项 -->
-        <div class="filter-item item3">
+        <div class="filter-item">
           <div class="filter-label"><b>是否启用自定义适配</b></div>
           <el-switch v-model="workFileScreenData.isEnableAdapter"></el-switch>
           <el-tooltip
@@ -246,7 +246,7 @@ onMounted(async () => {
         </div>
 
         <!-- 第六个筛选项 -->
-        <div class="filter-item item4">
+        <div class="filter-item ws-special">
           <div class="filter-label"><b>发布日期</b></div>
           <el-date-picker
               v-model="workFileScreenData.dateRange"
@@ -258,7 +258,7 @@ onMounted(async () => {
         </div>
 
         <!-- 第七个筛选项 -->
-        <div class="filter-item item5">
+        <div class="filter-item ws-special">
           <div class="filter-label"><b>作业查询</b></div>
           <el-input
               v-model="workFileScreenData.workQuery"
@@ -267,9 +267,6 @@ onMounted(async () => {
           ></el-input>
         </div>
       </div>
-    </el-card>
-    <el-card class="user-operator">
-
     </el-card>
   </div>
 </template>
@@ -282,7 +279,7 @@ onMounted(async () => {
 }
 
 .user-filter {
-  width: 1050px;
+  //width: 1050px;
 }
 
 .filter-flex {
@@ -297,26 +294,6 @@ onMounted(async () => {
   white-space: nowrap; /* 防止标签换行 */
 }
 
-//.item1 {
-//  width: 270px;
-//}
-//
-//.item2 {
-//  width: 465px;
-//}
-//
-//.item3 {
-//  width: 230px;
-//}
-//
-//.item4 {
-//  width: 400px;
-//}
-
-.item5 {
-  width: 400px;
-}
-
 .filter-label {
   margin-right: 10px;
   white-space: nowrap; /* 防止标签换行 */
@@ -325,8 +302,18 @@ onMounted(async () => {
 .el-icon {
   margin-left: 12px;
 }
+</style>
+<style lang="scss">
+.ws-special {
+  .el-date-editor {
+    --el-date-editor-datetimerange-width: 340px !important;
 
-.user-operator {
-  width: 380px;
+    .el-range__icon{
+      margin-right: 12px;
+    }
+  }
+  .el-input__wrapper{
+    width: 18em;
+  }
 }
 </style>

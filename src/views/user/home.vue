@@ -295,7 +295,7 @@ onMounted(() => {
         </div>
       </template>
       <div class="operator-elite">
-        <OperatorCards v-model="data.userInfo.operators" :edit-level="1"/>
+        <OperatorCards v-if="data.userInfo.operators.length>0" v-model="data.userInfo.operators" :edit-level="1"/>
       </div>
 
     </el-card>
@@ -313,7 +313,7 @@ onMounted(() => {
           </el-button>
         </div>
       </template>
-      <InfrastructureTable style="margin: auto;" v-model="data.userInfo.infrastructure" draggable/>
+      <InfrastructureTable v-if="data.userInfo.infrastructure.length>0" style="margin: auto;" v-model="data.userInfo.infrastructure" draggable/>
     </el-card>
   </div>
 </template>
@@ -329,7 +329,7 @@ onMounted(() => {
   flex-wrap: wrap;
   justify-content: center;
   align-items: center;
-  gap: 20px;
+  gap: 1.25em;
 }
 
 .card-header {
@@ -343,15 +343,16 @@ onMounted(() => {
 }
 
 .part-info {
+  min-width: 17.5em;
   width: 22%;
-  height: 220px;
+  height: 13.75em; /* 220px = 13.75em */
 }
 
 .base-info {
   display: flex;
   justify-content: space-between;
   position: relative;
-  margin: 15px 0;
+  margin: 1em 0;
 }
 
 .title-text {
@@ -360,21 +361,21 @@ onMounted(() => {
 
 //用户头像
 .user-avatar {
-  transform: scale(.22);
+  transform: scale(0.22);
   position: absolute;
-  top: -80px;
-  left: 170px;
+  top: -5em;
+  right: -4.3em;
   border-radius: 50%;
 }
 
 //选择头像的按钮
 .choose-avatar-button {
-  margin-top: -15px;
+  margin-top: -1em;
 }
 
 .choose-avatar-position {
-  top: -89px;
-  left: 150px;
+  top: -5.5625em; /* -89px = -5.5625em */
+  left: 9.375em; /* 150px = 9.375em */
 }
 
 //选择头像
@@ -382,27 +383,27 @@ onMounted(() => {
   position: relative;
   display: flex;
   flex-wrap: wrap;
-  gap: 7px;
+  gap: 0.4375em; /* 7px = 0.4375em */
 }
 
 .choose-avatar-wrap {
   position: relative;
-  width: 40px;
-  height: 40px;
+  width: 2.5em;
+  height: 2.5em;
   //background-color: red;
   border-radius: 50%;
 }
 
 .choose-avatar {
   position: absolute;
-  transform: scale(.22);
+  transform: scale(0.22);
   border-radius: 50%;
-  top: -70px;
-  left: -70px;
+  top: -4.375em;
+  left: -4.375em
 }
 
 .glow-effect {
-  box-shadow: 0 0 10px rgb(255, 177, 0);
+  box-shadow: 0 0 0.625em rgb(255, 177, 0); /* 10px = 0.625em */
   background-color: rgb(255, 177, 0);
 }
 
@@ -412,7 +413,7 @@ onMounted(() => {
   flex-wrap: wrap;
   justify-content: space-between;
   align-items: center;
-  margin-top: 15px;
+  margin-top: 1em;
 }
 
 /*干员精英化要求*/
@@ -421,7 +422,7 @@ onMounted(() => {
   display: flex;
   flex-wrap: wrap;
   justify-content: start;
-  gap: 7px;
+  gap: 0.4375em;
 }
 
 /* 添加淡入淡出动画样式 */
